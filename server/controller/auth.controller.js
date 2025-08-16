@@ -1,10 +1,11 @@
-import { sendVerificationEmail } from "../mailtrap/email.js";
+import { sendPasswordResetEmail, sendVerificationEmail } from "../lib/mailtrap/email.js";
 import { User } from "../models/User.js";
 import {
   genVeryficationCode,
   genTokenAndSetCookie,
 } from "../utils/genVeryficationCode.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export async function signUp(req, res, next) {
   const { email, password, name } = req.body;
@@ -86,7 +87,7 @@ export async function signIn(req, res, next) {
       });
     }
 
-    if(user && !user.isVerified){
+    if (user && !user.isVerified) {
       return res.status(400).json({
         success: false,
         message: "Email not verified",
@@ -112,7 +113,7 @@ export async function signIn(req, res, next) {
       user: {
         ...user._doc,
         _id: undefined,
-        password: undefined
+        password: undefined,
       },
     });
   } catch (error) {
@@ -164,6 +165,40 @@ export async function verifyEmail(req, res, next) {
       message: "Email verified successfully",
       user,
     });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function forgotPassWord(req, res, next) {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpiresAt = resetTokenExpiresAt;
+
+    await user.save();
+
+    await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+
+    console.log(`${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+    
+    res.status(200).json({
+      success: true,
+      message: "Password reset link sent to your email",
+    })
   } catch (error) {
     return res.status(400).json({
       success: false,
