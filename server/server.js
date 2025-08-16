@@ -1,8 +1,11 @@
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-const dotenv = require("dotenv");
-const cookieParser = require("cookie-parser");
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import { connectDB } from "./lib/database.js";
+import authRouter from "./routes/auth.routes.js";
+
 
 dotenv.config();
 
@@ -19,12 +22,23 @@ app.use(
 app.use(morgan("tiny"));
 app.use(cookieParser());
 
+const TOKEN = process.env.MAILTRAP_TOKEN;
 app.get("/", (req, res) => {
   res.json({
-    msg: "Hello world my project asdasd",
+    msg: TOKEN,
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+// Auth apis
+app.use("/api", authRouter);
+
+connectDB().then(() => {
+  try {
+    app.listen(port, () => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.log("Cannot connect to the server");
+  }
 });
+
