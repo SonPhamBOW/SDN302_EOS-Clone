@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/database.js";
 import authRouter from "./routes/auth.routes.js";
+import questionRouter from "./routes/question.routes.js";
+import courseRouter from "./routes/course.routes.js";
 
 
 dotenv.config();
@@ -31,6 +33,8 @@ app.get("/", (req, res) => {
 
 // Auth apis
 app.use("/api", authRouter);
+app.use("/api", questionRouter);
+app.use("/api", courseRouter);
 
 connectDB().then(() => {
   try {

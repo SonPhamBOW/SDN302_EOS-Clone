@@ -7,17 +7,24 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/.+\@.+\..+/, "Invalid email format"],
     },
     password: {
       type: String,
       required: true,
+      minlength: 6,
+      select: false,
     },
     name: {
       type: String,
       required: true,
+      trim: true,
     },
     role: {
       type: String,
+      enum: ["Student", "Admin"],
       default: "Student",
     },
     lastLogin: {
@@ -28,6 +35,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    avatarUrl: {
+      type: String,
+      default: null,
+    },
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
     verificationToken: String,
@@ -36,9 +47,12 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+userSchema.index({ email: 1 });
+userSchema.index({ role: 1 });
+
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
