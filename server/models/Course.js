@@ -22,6 +22,4 @@ const courseSchema = new mongoose.Schema(
   { timestamps: true } 
 );
 
-courseSchema.index({ name: 1 });
-
 export const Course = mongoose.model("Course", courseSchema);

@@ -114,3 +114,4 @@ export async function deleteCourse(req, res) {
     res.status(400).json({ success: false, message: "Invalid ID format" });
   }
 }
+

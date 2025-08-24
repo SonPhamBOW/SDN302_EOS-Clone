@@ -1,4 +1,7 @@
-import { sendPasswordResetEmail, sendVerificationEmail } from "../lib/mailtrap/email.js";
+import {
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "../lib/mailtrap/email.js";
 import { User } from "../models/User.js";
 import {
   genVeryficationCode,
@@ -34,7 +37,7 @@ export async function signUp(req, res, next) {
       await user.save();
 
       genTokenAndSetCookie(res, user._id);
-      await sendVerificationEmail(user.email, verificationToken);
+      // await sendVerificationEmail(user.email, verificationToken);
 
       return res.status(200).json({
         success: true,
@@ -52,7 +55,7 @@ export async function signUp(req, res, next) {
     });
 
     genTokenAndSetCookie(res, user._id);
-    await sendVerificationEmail(user.email, verificationToken);
+    // await sendVerificationEmail(user.email, verificationToken);
 
     return res.status(201).json({
       success: true,
@@ -78,7 +81,7 @@ export async function signIn(req, res, next) {
     }
     const user = await User.findOne({
       email,
-    });
+    }).select("+password");;
 
     if (!user) {
       return res.status(400).json({
@@ -87,12 +90,12 @@ export async function signIn(req, res, next) {
       });
     }
 
-    if (user && !user.isVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Email not verified",
-      });
-    }
+    // if (user && !user.isVerified) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Email not verified",
+    //   });
+    // }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -191,14 +194,32 @@ export async function forgotPassWord(req, res, next) {
 
     await user.save();
 
-    await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+    await sendPasswordResetEmail(
+      user.email,
+      `${process.env.CLIENT_URL}/reset-password/${resetToken}`
+    );
 
     console.log(`${process.env.CLIENT_URL}/reset-password/${resetToken}`);
-    
+
     res.status(200).json({
       success: true,
       message: "Password reset link sent to your email",
-    })
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function getMe(req, res, next) {
+  try {
+    const user = req.user;
+    res.status(200).json({
+      success: true,
+      user,
+    });
   } catch (error) {
     return res.status(400).json({
       success: false,

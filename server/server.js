@@ -7,7 +7,7 @@ import { connectDB } from "./lib/database.js";
 import authRouter from "./routes/auth.routes.js";
 import questionRouter from "./routes/question.routes.js";
 import courseRouter from "./routes/course.routes.js";
-
+import adminRouter from "./routes/admin.route.js";
 
 dotenv.config();
 
@@ -35,6 +35,7 @@ app.get("/", (req, res) => {
 app.use("/api", authRouter);
 app.use("/api", questionRouter);
 app.use("/api", courseRouter);
+app.use("/api", adminRouter);
 
 connectDB().then(() => {
   try {
@@ -45,4 +46,3 @@ connectDB().then(() => {
     console.log("Cannot connect to the server");
   }
 });
-
