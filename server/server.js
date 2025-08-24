@@ -8,6 +8,8 @@ import authRouter from "./routes/auth.routes.js";
 import questionRouter from "./routes/question.routes.js";
 import courseRouter from "./routes/course.routes.js";
 import adminRouter from "./routes/admin.route.js";
+import studentRouter from "./routes/student.routes.js";
+import studentExamRouter from "./routes/student.exam.routes.js";
 
 dotenv.config();
 
@@ -36,6 +38,8 @@ app.use("/api", authRouter);
 app.use("/api", questionRouter);
 app.use("/api", courseRouter);
 app.use("/api", adminRouter);
+app.use("/api", studentRouter);
+app.use("/api", studentExamRouter);
 
 connectDB().then(() => {
   try {

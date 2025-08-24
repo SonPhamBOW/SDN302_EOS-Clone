@@ -4,7 +4,7 @@ const examSchema = new mongoose.Schema(
   {
     course_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Course", 
+      ref: "Course",
       required: true,
     },
     name: {
@@ -13,7 +13,7 @@ const examSchema = new mongoose.Schema(
       trim: true,
     },
     duration: {
-      type: Number, 
+      type: Number,
       required: true,
       min: 1,
     },
@@ -30,8 +30,15 @@ const examSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    questions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Question",
+        required: true,
+      },
+    ],
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Exam", examSchema);
