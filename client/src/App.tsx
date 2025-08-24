@@ -7,6 +7,11 @@ import Homepage from "./pages/student/Homepage";
 import Layout from "./components/student/Layout";
 import useAuthUser from "./hooks/useAuthUser";
 import PageLoader from "./components/PageLoader";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+import AdminLayout from "./pages/admin/AdminLayout";
+import MangeCourse from "./pages/admin/MangeCourse";
+import ManageStudents from "./pages/admin/ManageStudents";
 
 function App() {
   const { isLoading, authUser } = useAuthUser();
@@ -14,32 +19,25 @@ function App() {
 
   if (isLoading) return <PageLoader />;
   const isAuthenticated = Boolean(authUser);
-  const isAdmin = authUser?.role === "Admin";
+  const isAdmin = authUser?.role == "Admin";
 
   return (
     <div className="h-screen w-full overflow-hidden" data-theme={theme}>
+      <ToastContainer autoClose={3000} /> {/* ✅ container */}
       <Routes>
-        <Route
-          path="/admin"
-          element={
-            isAuthenticated ? (
-              isAdmin ? (
-                <Dashboard />
-              ) : (
-                <Homepage />
-              )
-            ) : (
-              <LoginPage />
-            )
-          }
-        />
         <Route
           path="/"
           element={
             isAuthenticated ? (
-              <Layout showSidebar={true}>
-                <Homepage />
-              </Layout>
+              isAdmin ? (
+                <AdminLayout showSidebar={true}>
+                  <Dashboard />
+                </AdminLayout>
+              ) : (
+                <Layout showSidebar={true}>
+                  <Homepage />
+                </Layout>
+              )
             ) : (
               <LoginPage />
             )
@@ -47,6 +45,22 @@ function App() {
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<SignUpPage />} />
+        <Route
+          path="/course"
+          element={
+            <AdminLayout showSidebar={true}>
+              <MangeCourse />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/students"
+          element={
+            <AdminLayout showSidebar={true}>
+              <ManageStudents />
+            </AdminLayout>
+          }
+        />
       </Routes>
     </div>
   );

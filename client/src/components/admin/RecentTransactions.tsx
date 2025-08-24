@@ -58,6 +58,41 @@ export const RecentTransactions = () => {
             price="$22.02"
             order={6}
           />
+          <TableRow
+            cusId="#1304"
+            sku="Pro 3 Month"
+            date="Jul 31st"
+            price="$22.02"
+            order={6}
+          />
+          <TableRow
+            cusId="#1304"
+            sku="Pro 3 Month"
+            date="Jul 31st"
+            price="$22.02"
+            order={6}
+          />
+          <TableRow
+            cusId="#1304"
+            sku="Pro 3 Month"
+            date="Jul 31st"
+            price="$22.02"
+            order={6}
+          />
+          <TableRow
+            cusId="#1304"
+            sku="Pro 3 Month"
+            date="Jul 31st"
+            price="$22.02"
+            order={6}
+          />
+          <TableRow
+            cusId="#1304"
+            sku="Pro 3 Month"
+            date="Jul 31st"
+            price="$22.02"
+            order={6}
+          />
         </tbody>
       </table>
     </div>

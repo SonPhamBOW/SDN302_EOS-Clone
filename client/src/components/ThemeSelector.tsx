@@ -1,6 +1,6 @@
 import { PaletteIcon } from "lucide-react";
-import { THEMES } from "../../constants";
-import { useThemeStore } from "../../store/useThemeStore";
+import { THEMES } from "../constants/index";
+import { useThemeStore } from "../store/useThemeStore";
 
 const ThemeSelector = () => {
   const { theme, setTheme } = useThemeStore();

@@ -1,32 +1,30 @@
 import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
 
-export const StatCards = () => {
+const MangeCourse = () => {
   return (
-    <>
-      <Card
-        title="Gross Revenue"
-        value="$120,054.24"
-        pillText="2.75%"
-        trend="up"
-        period="From Jan 1st - Jul 31st"
-      />
-      <Card
-        title="Avg Order"
-        value="$27.97"
-        pillText="1.01%"
-        trend="down"
-        period="From Jan 1st - Jul 31st"
-      />
-      <Card
-        title="Trailing Year"
-        value="$278,054.24"
-        pillText="60.75%"
-        trend="up"
-        period="Previous 365 days"
-      />
-    </>
+    <div className="w-full h-screen px-4 overflow-y-scroll">
+      <h1>Manage Courses</h1>
+      <div className="flex">
+        <Card
+          title="Gross Revenue"
+          value="$120,054.24"
+          pillText="2.75%"
+          trend="up"
+          period="From Jan 1st - Jul 31st"
+        />
+        <Card
+          title="Gross Revenue"
+          value="$120,054.24"
+          pillText="2.75%"
+          trend="up"
+          period="From Jan 1st - Jul 31st"
+        />
+      </div>
+    </div>
   );
 };
+
+export default MangeCourse;
 
 const Card = ({
   title,

@@ -1,15 +1,11 @@
 import { Link, useLocation } from "react-router";
-// import useAuthUser from "../hooks/useAuthUser";
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShipWheelIcon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
-import ThemeSelector from "./ThemeSelector";
-import useAuthUser from "../../hooks/useAuthUser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signOut } from "../../apis/Auth.api";
+import ToogleThemeBtn from "../ToogleThemeBtn";
 
 const Navbar = () => {
-  const { authUser } = useAuthUser();
   const location = useLocation();
   const curentPath = location.pathname;
 
@@ -62,13 +58,7 @@ const Navbar = () => {
           </div>
 
           {/* TODO */}
-          <ThemeSelector />
-
-          <div className="avatar">
-            <div className="w-9 rounded-full cursor-pointer">
-              <img src={authUser?.avatarUrl} alt="" rel="noreferrer" />
-            </div>
-          </div>
+          <ToogleThemeBtn />
 
           <button className="btn btn-ghost btn-circle" onClick={handleSignOut}>
             <DynamicIcon
