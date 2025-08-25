@@ -1,17 +1,18 @@
 import { Navigate, Route, Routes } from "react-router";
-import Dashboard from "./pages/admin/Dashboard";
-import { useThemeStore } from "./store/useThemeStore";
-import LoginPage from "./pages/LoginPage";
-import SignUpPage from "./pages/SignUpPage";
-import Homepage from "./pages/student/Homepage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import PageLoader from "./components/PageLoader";
 import Layout from "./components/student/Layout";
 import useAuthUser from "./hooks/useAuthUser";
-import PageLoader from "./components/PageLoader";
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-toastify";
 import AdminLayout from "./pages/admin/AdminLayout";
-import MangeCourse from "./pages/admin/MangeCourse";
+import Dashboard from "./pages/admin/Dashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
+import MangeCourse from "./pages/admin/MangeCourse";
+import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import { Exam } from "./pages/student/Exam";
+import Homepage from "./pages/student/Homepage";
+import { useThemeStore } from "./store/useThemeStore";
 
 function App() {
   const { isLoading, authUser } = useAuthUser();
@@ -37,6 +38,22 @@ function App() {
                 <Layout showSidebar={true}>
                   <Homepage />
                 </Layout>
+              )
+            ) : (
+              <LoginPage />
+            )
+          }
+        />
+        <Route
+          path="/exam/:id"
+          element={
+            isAuthenticated ? (
+              isAdmin ? (
+                <AdminLayout showSidebar={true}>
+                  <Dashboard />
+                </AdminLayout>
+              ) : (
+                  <Exam />
               )
             ) : (
               <LoginPage />

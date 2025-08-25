@@ -1,9 +1,8 @@
-import { ExamResult } from "../models/ExamResult.js";
-import { Exam } from "../models/Exam.js";
-import { Course } from "../models/Course.js";
-import { Question } from "../models/Question.js";
 import mongoose from "mongoose";
-import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
+import { Course } from "../models/Course.js";
+import { Exam } from "../models/Exam.js";
+import { ExamResult } from "../models/ExamResult.js";
+import { Question } from "../models/Question.js";
 
 /**
  * USECASE 1: Xem kết quả & thống kê điểm
@@ -44,7 +43,7 @@ export async function getExamResultById(req, res) {
     })
     .populate('exam_id', 'name start_time end_time total_questions')
     .populate('course_id', 'name')
-    .populate('answers.question_id', 'question_text options');
+    .populate('answers.question_id', 'content type answers');
     
     if (!result) {
       return res.status(404).json({ 
@@ -240,10 +239,16 @@ export async function getCourseExams(req, res) {
 export async function takeExam(req, res) {
   try {
     const {examId} = req.params;
-    const exam = await Exam.findById(examId);
+    const exam = await Exam.findById(examId)
+      .populate({
+        path: 'questions',
+        model: Question,
+        select: 'content type answers imageUrl'
+      })
+      .lean();
     if (!exam) return res.status(404).json({ success: false, message: "Exam not found" });
     
-    const randomQuestions = await getRandomQuestions(examId, exam.total_questions);
+    const randomQuestions = getRandom(exam.questions);
     
     res.status(200).json({
       success: true,
@@ -257,6 +262,10 @@ export async function takeExam(req, res) {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+}
+function getRandom(questions) {
+  const randomQuestions = questions.sort(() => 0.5 - Math.random());
+  return randomQuestions;
 }
 
 /**
@@ -328,6 +337,17 @@ export async function submitExam(req, res) {
     for (const answer of answers) {
       const question = questions.find(q => q._id.toString() === answer.question_id);
       if (!question) continue;
+      if (question.type === 'essay') {
+        // Tự động cộng điểm cho câu hỏi tự luận
+        correctAnswers++;
+        processedAnswers.push({
+          question_id: answer.question_id,
+          student_answer: answer.student_answer,
+          is_correct: true,
+          correct_answer: ""
+        });
+        continue;
+      }
       
       // Tìm đáp án đúng
       const correctAnswer = question.answers.find(ans => ans.isCorrect);
