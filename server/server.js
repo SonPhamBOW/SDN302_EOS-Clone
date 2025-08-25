@@ -35,15 +35,15 @@ app.get("/", (req, res) => {
 });
 
 
-// Student exam routes - đặt đầu tiên để tránh conflict
+// Student exam routes - đặt cuối để tránh conflict
 app.use("/api", studentExamRouter);
-
 // Auth apis
 app.use("/api", authRouter);
 app.use("/api", questionRouter);
 app.use("/api", courseRouter);
 app.use("/api/student", studentRouter);
 app.use("/api", examLogRouter);
+// Admin routes - đặt trước student để có priority cao hơn
 app.use("/api", adminRouter);
 
 connectDB().then(() => {

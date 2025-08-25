@@ -257,19 +257,65 @@ export async function getCourseStatistics(req, res) {
 export async function getAvailableExams(req, res) {
   try {
     const currentTime = new Date();
+    const { search, courseCode } = req.query;
     
-    // Lấy các kỳ thi đang mở (start_time <= now <= end_time)
-    const availableExams = await Exam.find({
-      start_time: { $lte: currentTime },
-      end_time: { $gte: currentTime }
-    })
-    .populate('course_id', 'name description')
-    .select('-questions') // Không trả về câu hỏi
-    .sort({ start_time: 1 });
+    // Build query for exams
+    let examQuery = {};
+    
+    // If course code is provided, filter by course code
+    if (courseCode) {
+      const course = await Course.findOne({ course_code: courseCode.toUpperCase() });
+      if (course) {
+        examQuery.course_id = course._id;
+      } else {
+        // If course code not found, return empty array
+        return res.status(200).json({
+          success: true,
+          data: []
+        });
+      }
+    }
+    
+    // Lấy exams với filter
+    const allExams = await Exam.find(examQuery)
+      .populate('course_id', 'name description course_code')
+      .select('-questions') // Không trả về câu hỏi
+      .sort({ start_time: 1 });
+    
+    // Filter by search term if provided
+    let filteredExams = allExams;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredExams = allExams.filter(exam => 
+        exam.name.toLowerCase().includes(searchLower) ||
+        (exam.course_id && exam.course_id.name.toLowerCase().includes(searchLower)) ||
+        (exam.course_id && exam.course_id.course_code.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    // Thêm trạng thái cho mỗi exam
+    const examsWithStatus = filteredExams.map(exam => {
+      let status = 'upcoming';
+      let canAccess = false;
+      
+      if (currentTime >= exam.start_time && currentTime <= exam.end_time) {
+        status = 'ongoing';
+        canAccess = true;
+      } else if (currentTime > exam.end_time) {
+        status = 'completed';
+        canAccess = false;
+      }
+      
+      return {
+        ...exam.toObject(),
+        status,
+        canAccess
+      };
+    });
     
     res.status(200).json({
       success: true,
-      data: availableExams
+      data: examsWithStatus
     });
   } catch (error) {
     res.status(500).json({ 

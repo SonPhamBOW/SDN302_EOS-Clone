@@ -1,4 +1,4 @@
-import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, TrashIcon } from "lucide-react";
 import { FaArrowRight } from "react-icons/fa";
 import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
 import { getAllCourses } from "../../apis/Admin.api";
@@ -36,6 +36,7 @@ const MangeCourse = () => {
           <thead className="text-base-content bg-base-200">
             <tr>
               <th className="px-4 py-2 text-left">#</th>
+              <th className="px-4 py-2 text-left">Course Code</th>
               <th className="px-4 py-2 text-left">Course Name</th>
               <th className="px-4 py-2 text-left">Description</th>
               <th className="px-4 py-2 text-left">Created By</th>
@@ -48,6 +49,9 @@ const MangeCourse = () => {
             {courses.data?.data?.map((course, index) => (
               <tr key={course._id} className="hover:bg-base-300">
                 <td className="px-4 py-2">{index + 1}</td>
+                <td className="px-4 py-2">
+                  <span className="badge badge-outline font-mono">{course.course_code}</span>
+                </td>
                 <td className="px-4 py-2 font-medium">{course.name}</td>
                 <td className="px-4 py-2">{course.description}</td>
                 <td className="px-4 py-2">{course.created_by.name}</td>

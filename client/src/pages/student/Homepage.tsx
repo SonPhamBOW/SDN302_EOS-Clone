@@ -1,4 +1,3 @@
-import { UserIcon} from "lucide-react";
 import { Link } from "react-router";
 
 const Homepage = () => {
@@ -9,13 +8,11 @@ const Homepage = () => {
           className="flex flex-col sm:flex-row items-start 
         sm:items-center justify-between gap-4"
         >
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Your Friends
-          </h2>
-          <Link to={"/notifications"} className="btn btn-outline btn-sm">
-            <UserIcon className="mr-2 size-4" />
-            Friend Requests
-          </Link>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Student dashboard</h2>
+          <div className="flex gap-2">
+            <Link to={"/student/stats"} className="btn btn-primary btn-sm">My statistics</Link>
+            <Link to={"/student/available-exams"} className="btn btn-outline btn-sm">Available exams</Link>
+          </div>
         </div>
 
       </div>
@@ -25,12 +22,8 @@ const Homepage = () => {
           className="flex flex-col items-start 
          gap-2"
         >
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Meet new learners
-          </h2>
-          <p className="text-sm tracking-tight">
-            Discover perfect language exchange partners based on your profile
-          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome</h2>
+          <p className="text-sm tracking-tight">Use the shortcuts above to view your exam statistics or join available exams.</p>
         </div>
 
       </div>

@@ -41,27 +41,27 @@ const Sidebar = () => {
         </Link>
 
         <Link
-          to={"/friends"}
+          to={"/student/stats"}
           className={`btn btn-ghost justify-start w-full gap-3 px-3 normal-case rounded-full
-            ${curentPath === "/friends" ? "btn-active" : ""}`}
+            ${curentPath === "/student/stats" ? "btn-active" : ""}`}
         >
           <DynamicIcon
-            name={"users"}
+            name={"bar-chart-2"}
             className="size-5 text-base-content opacity-70"
           />
-          <span className="">Friends</span>
+          <span className="">My statistics</span>
         </Link>
 
         <Link
-          to={"/notifications"}
+          to={"/student/available-exams"}
           className={`btn btn-ghost justify-start w-full gap-3 px-3 normal-case rounded-full
-            ${curentPath === "/notification" ? "btn-active" : ""}`}
+            ${curentPath === "/student/available-exams" ? "btn-active" : ""}`}
         >
           <DynamicIcon
-            name={"bell"}
+            name={"calendar"}
             className="size-5 text-base-content opacity-70"
           />
-          <span className="">Notification</span>
+          <span className="">Available exams</span>
         </Link>
       </nav>
 
