@@ -1,9 +1,9 @@
 // bỏ mutation; sử dụng cache thủ công theo examId
 import { AxiosError } from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { Bounce, toast } from "react-toastify";
-import { submitExam as submitExamApi, takeExam } from "../../apis/Student.api";
+import { logExamEvent, submitExam as submitExamApi, takeExam } from "../../apis/Student.api";
 import { useThemeStore } from "../../store/useThemeStore";
 import type { ExamData, Question } from "../../types/Exam.type";
 
@@ -25,6 +25,7 @@ const formatTime = (ms: number): string => {
 
 export const Exam = () => {
   const { id: examId } = useParams();
+  const navigate = useNavigate();
   const { theme } = useThemeStore();
 
   const storageKey = useMemo(() => `exam:${examId}`, [examId]);
@@ -142,6 +143,30 @@ export const Exam = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Log khi đổi tab và trước khi rời trang
+  useEffect(() => {
+    if (!examId) return;
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        logExamEvent(examId, "Tab hidden").catch(() => {});
+      } else if (document.visibilityState === "visible") {
+        logExamEvent(examId, "Tab visible").catch(() => {});
+      }
+    };
+    const handleBeforeUnload = () => {
+      navigator.sendBeacon?.(
+        `${window.location.origin}/api/exam-logs`,
+        new Blob([JSON.stringify({ examId, note: "Page unload" })], { type: "application/json" })
+      );
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [examId]);
+
   const remainingMs = useMemo(() => {
     if (!exam || !startedAtMs) return 0;
     return Math.max(0, startedAtMs + exam.duration * 60 * 1000 - nowMs);
@@ -247,6 +272,7 @@ export const Exam = () => {
         }
       );
       setIsConfirmOpen(false);
+      navigate(`/exam/${examId}/result`, { state: res.data });
     } catch (error: unknown) {
       let errMsg = "Nộp bài thất bại";
       if (error && (error as unknown as { response?: { data?: { message?: string } } }).response?.data?.message) {

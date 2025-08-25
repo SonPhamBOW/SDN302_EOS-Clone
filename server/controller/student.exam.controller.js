@@ -1,11 +1,9 @@
 import mongoose from "mongoose";
 import { Course } from "../models/Course.js";
+import CourseStudent from "../models/CourseStudent.js";
 import { Exam } from "../models/Exam.js";
 import { ExamResult } from "../models/ExamResult.js";
 import { Question } from "../models/Question.js";
-import CourseStudent from "../models/CourseStudent.js";
-import mongoose from "mongoose";
-import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
 
 /**
  * USECASE 1: Xem kết quả & thống kê điểm
@@ -396,13 +394,13 @@ export async function submitExam(req, res) {
       });
     }
     
-    const currentTime = new Date();
-    if (currentTime < exam.start_time || currentTime > exam.end_time) {
-      return res.status(400).json({
-        success: false,
-        message: "Exam is not available at this time"
-      });
-    }
+    // const currentTime = new Date();
+    // if (currentTime < exam.start_time || currentTime > exam.end_time) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Exam is not available at this time"
+    //   });
+    // }
     
     // Kiểm tra xem học sinh đã nộp bài này chưa - handle cả ObjectId và string ID
     const existingResult = await ExamResult.findOne({
@@ -441,7 +439,11 @@ export async function submitExam(req, res) {
     for (const answer of answers) {
       const question = questions.find(q => q._id.toString() === answer.question_id);
       if (!question) continue;
-      if (question.type === 'essay') {
+      
+      // Tìm đáp án đúng
+      const correctAnswer = question.answers.find(ans => ans.isCorrect);
+      const isCorrect = correctAnswer && correctAnswer.content === answer.student_answer;
+      if (question.type === 'essay' && answer.student_answer) {
         // Tự động cộng điểm cho câu hỏi tự luận
         correctAnswers++;
         processedAnswers.push({
@@ -452,10 +454,6 @@ export async function submitExam(req, res) {
         });
         continue;
       }
-      
-      // Tìm đáp án đúng
-      const correctAnswer = question.answers.find(ans => ans.isCorrect);
-      const isCorrect = correctAnswer && correctAnswer.content === answer.student_answer;
       
       if (isCorrect) {
         correctAnswers++;

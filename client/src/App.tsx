@@ -11,6 +11,7 @@ import MangeCourse from "./pages/admin/MangeCourse";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import { Exam } from "./pages/student/Exam";
+import ExamResult from "./pages/student/ExamResult";
 import Homepage from "./pages/student/Homepage";
 import { useThemeStore } from "./store/useThemeStore";
 
@@ -54,6 +55,24 @@ function App() {
                 </AdminLayout>
               ) : (
                   <Exam />
+              )
+            ) : (
+              <LoginPage />
+            )
+          }
+        />
+        <Route
+          path="/exam/:id/result"
+          element={
+            isAuthenticated ? (
+              isAdmin ? (
+                <AdminLayout showSidebar={true}>
+                  <Dashboard />
+                </AdminLayout>
+              ) : (
+                <Layout showSidebar={false}>
+                  <ExamResult />
+                </Layout>
               )
             ) : (
               <LoginPage />
