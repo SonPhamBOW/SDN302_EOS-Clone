@@ -1,4 +1,4 @@
-import { ExamLog } from "../models/ExamLog";
+import { ExamLog } from "../models/ExamLog.js";
 
 export async function createExamLog(req, res) {
   try {
