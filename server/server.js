@@ -34,15 +34,17 @@ app.get("/", (req, res) => {
   });
 });
 
+
+// Student exam routes - đặt đầu tiên để tránh conflict
+app.use("/api", studentExamRouter);
+
 // Auth apis
 app.use("/api", authRouter);
 app.use("/api", questionRouter);
 app.use("/api", courseRouter);
-app.use("/api", adminRouter);
-// Register exam routes BEFORE the dynamic /student/:id route to avoid conflicts
-app.use("/api", studentExamRouter);
 app.use("/api/student", studentRouter);
 app.use("/api", examLogRouter);
+app.use("/api", adminRouter);
 
 connectDB().then(() => {
   try {

@@ -14,7 +14,13 @@ export async function getExamResults(req, res) {
   try {
     const studentId = req.user.id; // Lấy từ middleware auth
     
-    const results = await ExamResult.find({ student_id: studentId })
+    // Tìm theo cả ObjectId và string ID để handle database có mixed types
+    const results = await ExamResult.find({
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ]
+    })
       .populate('exam_id', 'name start_time end_time')
       .populate('course_id', 'name')
       .sort({ submitted_at: -1 });
@@ -73,8 +79,13 @@ export async function getExamStatistics(req, res) {
   try {
     const studentId = req.user.id;
     
-    // Lấy tất cả kết quả thi
-    const results = await ExamResult.find({ student_id: studentId });
+    // Lấy tất cả kết quả thi - handle cả ObjectId và string ID
+    const results = await ExamResult.find({
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ]
+    });
     
     if (results.length === 0) {
       return res.status(200).json({
@@ -183,7 +194,13 @@ export async function getCourseStatistics(req, res) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
-    const results = await ExamResult.find({ student_id: studentId, course_id: courseId });
+    const results = await ExamResult.find({ 
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ],
+      course_id: courseId 
+    });
 
     if (results.length === 0) {
       return res.status(200).json({
@@ -376,9 +393,12 @@ export async function submitExam(req, res) {
       });
     }
     
-    // Kiểm tra xem học sinh đã nộp bài này chưa
+    // Kiểm tra xem học sinh đã nộp bài này chưa - handle cả ObjectId và string ID
     const existingResult = await ExamResult.findOne({
-      student_id: studentId,
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ],
       exam_id: examId
     });
     
