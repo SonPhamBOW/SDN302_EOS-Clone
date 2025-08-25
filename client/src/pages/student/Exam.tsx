@@ -1,6 +1,6 @@
 // bỏ mutation; sử dụng cache thủ công theo examId
 import { AxiosError } from "axios";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Bounce, toast } from "react-toastify";
 import { logExamEvent, submitExam as submitExamApi, takeExam } from "../../apis/Student.api";
@@ -184,6 +184,8 @@ export const Exam = () => {
     }, 0);
   }, [exam, answers]);
 
+  const autoSubmitRef = useRef<boolean>(false);
+
   const handlePickAnswer = useCallback(
     (questionId: string, value: string) => {
       setAnswers((prev) => {
@@ -228,7 +230,7 @@ export const Exam = () => {
     });
   }, [currentQuestion, flagsKey]);
 
-  const submitExam = async () => {
+  const submitExam = useCallback(async () => {
     if (!exam) return;
     // build payload {question_id, student_answer}; lấy content đáp án từ question.answers
     const payloadAnswers = exam.questions.map((q: Question) => {
@@ -289,7 +291,17 @@ export const Exam = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [answers, exam, examId, startedAtMs, theme, navigate]);
+
+  // Tự động nộp bài khi hết giờ (chỉ 1 lần)
+  useEffect(() => {
+    if (isTimeUp && !autoSubmitRef.current) {
+      autoSubmitRef.current = true;
+      setIsConfirmOpen(false);
+      if (examId) logExamEvent(examId, "Auto submit due to timeout").catch(() => {});
+      submitExam();
+    }
+  }, [isTimeUp, examId, submitExam]);
 
   const renderAnswers = (question: Question) => {
     if (question.type === "essay") {
@@ -399,6 +411,7 @@ export const Exam = () => {
               <button
                 className="btn btn-outline bg-primary text-primary-content"
                 onClick={() => setIsConfirmOpen(true)}
+                disabled={isTimeUp}
               >
                 Nộp bài
               </button>
