@@ -1,5 +1,5 @@
 import { User } from "../models/User.js";
-import { CourseStudent } from "../models/CourseStudent.js";
+import CourseStudent from "../models/CourseStudent.js";
 /**
  * Middleware inside controller file
  */
@@ -36,7 +36,7 @@ export async function enrollStudent(req, res) {
     }
 
     // Prevent duplicate enrollment
-    const existing = await CourseStudent.findOne({ courseId, studentId });
+    const existing = await CourseStudent.findOne({ course_id: courseId, student_id: studentId });
     if (existing) {
       return res
         .status(400)
@@ -44,7 +44,7 @@ export async function enrollStudent(req, res) {
     }
 
     // Create enrollment record
-    const enrollment = new CourseStudent({ courseId, studentId });
+    const enrollment = new CourseStudent({ course_id: courseId, student_id: studentId });
     await enrollment.save();
 
     res.status(201).json({
@@ -102,10 +102,10 @@ export async function deleteStudent(req, res) {
 // Get student info by ID (and enrolled courses)
 export async function getStudentById(req, res) {
   try {
-    const { studentId } = req.params;
+    const { id } = req.params;
 
-    const enrollments = await CourseStudent.find({ student_id: studentId })
-      .populate("course_id", "title description") // include course info
+    const enrollments = await CourseStudent.find({ student_id: id })
+      .populate("course_id", "name description") // include course info
       .populate("student_id", "name email"); // include student info
 
     if (!enrollments || enrollments.length === 0) {

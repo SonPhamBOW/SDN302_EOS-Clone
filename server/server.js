@@ -39,8 +39,9 @@ app.use("/api", authRouter);
 app.use("/api", questionRouter);
 app.use("/api", courseRouter);
 app.use("/api", adminRouter);
-app.use("/api", studentRouter);
+// Register exam routes BEFORE the dynamic /student/:id route to avoid conflicts
 app.use("/api", studentExamRouter);
+app.use("/api/student", studentRouter);
 app.use("/api", examLogRouter);
 
 connectDB().then(() => {
