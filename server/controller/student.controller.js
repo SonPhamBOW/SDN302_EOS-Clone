@@ -1,5 +1,5 @@
-import { User } from "../models/user.model.js";
-import { CourseStudent } from "../models/course-student.model.js";
+import { User } from "../models/User.js";
+import { CourseStudent } from "../models/CourseStudent.js";
 /**
  * Middleware inside controller file
  */
