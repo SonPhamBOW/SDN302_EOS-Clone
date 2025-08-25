@@ -36,7 +36,10 @@ export async function enrollStudent(req, res) {
     }
 
     // Prevent duplicate enrollment
-    const existing = await CourseStudent.findOne({ course_id: courseId, student_id: studentId });
+    const existing = await CourseStudent.findOne({
+      course_id: courseId,
+      student_id: studentId,
+    });
     if (existing) {
       return res
         .status(400)
@@ -44,7 +47,10 @@ export async function enrollStudent(req, res) {
     }
 
     // Create enrollment record
-    const enrollment = new CourseStudent({ course_id: courseId, student_id: studentId });
+    const enrollment = new CourseStudent({
+      course_id: courseId,
+      student_id: studentId,
+    });
     await enrollment.save();
 
     res.status(201).json({
@@ -119,5 +125,26 @@ export async function getStudentById(req, res) {
     res
       .status(500)
       .json({ message: "Error fetching student", error: err.message });
+  }
+}
+
+export async function searchStudents(req, res) {
+  try {
+    const { search } = req.query;
+
+    if (!search)
+      return res.status(400).json({ message: "Search query is required" });
+
+    const students = await User.find({
+      role: "Student",
+      name: { $regex: search, $options: "i" },
+    })
+      .select("-password")
+      .limit(20);
+
+    // Return empty array if no students found
+    res.status(200).json({ success: true, data: students || [] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 }
