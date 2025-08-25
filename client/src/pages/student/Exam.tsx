@@ -391,7 +391,6 @@ export const Exam = () => {
               <button className="btn" onClick={() => goToIndex(currentIndex - 1)} disabled={currentIndex === 0}>
                 ← Trước
               </button>
-              <button className="btn" onClick={reloadExam}>Tải lại</button>
               <button
                 className="btn"
                 onClick={() => goToIndex(currentIndex + 1)}
