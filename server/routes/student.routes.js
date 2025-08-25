@@ -1,9 +1,9 @@
 import express from "express";
-import multer from "multer";
+// import multer from "multer";
 import * as studentController from "../controller/student.controller.js";
 
 const studentRouter = express.Router();
-const upload = multer({ dest: "uploads/" });
+// const upload = multer({ dest: "uploads/" });
 
 // Get all students
 studentRouter.get("/student/", studentController.getAllStudents);
@@ -18,10 +18,10 @@ studentRouter.put("/student/:id", studentController.updateStudent);
 studentRouter.delete("/student/:id", studentController.deleteStudent);
 
 // Import students from Excel/CSV
-studentRouter.post(
-  "/student/import",
-  upload.single("file"),
-  studentController.importStudents
-);
+// studentRouter.post(
+//   "/student/import",
+//   upload.single("file"),
+//   studentController.importStudents
+// );
 
 export default studentRouter;

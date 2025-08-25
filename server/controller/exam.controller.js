@@ -1,6 +1,37 @@
-import Exam from "../models/Exam.js";
+import { Exam } from "../models/Exam.js";
 import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
 import { shuffleQuestions } from "../utils/shuffleQuestions.js";
+
+// [POST] /api/exams
+export async function createNewExam(req, res) {
+  const exam = req.body;
+  try {
+    if (!exam) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please enter all required field" });
+    }
+
+    const alreadyExistExam = await Exam.findOne(exam.name);
+    if (alreadyExistExam) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Already contain this exam" });
+    }
+
+    const newExam = new Exam(exam);
+    await newExam.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Created new exam",
+      newExam,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
 export async function updateExam(req, res) {
   try {
     const { examId } = req.params;

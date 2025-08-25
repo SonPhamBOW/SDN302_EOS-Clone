@@ -1,14 +1,26 @@
-import {Course} from "../models/Course.js";
+import { Course } from "../models/Course.js";
 
 // [POST] /api/courses
 export async function createCourse(req, res) {
   try {
     const { name, description, created_by } = req.body;
 
+    const newName = name.toUpperCase();
+
     if (!name || !created_by) {
       return res.status(400).json({
         success: false,
         message: "Course name and created_by are required",
+      });
+    }
+
+    const alreadyExistCourse = await Course.findOne({ name: newName });
+
+    if (alreadyExistCourse) {
+      return res.status(400).json({
+        success: false,
+        message: "Already exist this course!",
+        data: alreadyExistCourse,
       });
     }
 
@@ -20,15 +32,6 @@ export async function createCourse(req, res) {
       data: course,
     });
   } catch (error) {
-    console.error("Create course error:", error);
-
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Course name already exists",
-      });
-    }
-
     res.status(500).json({ success: false, message: "Server error" });
   }
 }
@@ -114,4 +117,3 @@ export async function deleteCourse(req, res) {
     res.status(400).json({ success: false, message: "Invalid ID format" });
   }
 }
-

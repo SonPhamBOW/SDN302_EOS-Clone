@@ -1,6 +1,6 @@
-import { User } from "../models/user.model.js";
+import { User } from "../models/User.js";
 import bcrypt from "bcryptjs";
-import xlsx from "xlsx";
+// import xlsx from "xlsx";
 
 /**
  * Middleware inside controller file
@@ -94,39 +94,39 @@ export async function deleteStudent(req, res) {
 /**
  * Import students from Excel/CSV
  */
-export async function importStudents(req, res) {
-  isAdmin(req, res, async () => {
-    try {
-      if (!req.file) {
-        return res
-          .status(400)
-          .json({ success: false, message: "No file uploaded" });
-      }
+// export async function importStudents(req, res) {
+//   isAdmin(req, res, async () => {
+//     try {
+//       if (!req.file) {
+//         return res
+//           .status(400)
+//           .json({ success: false, message: "No file uploaded" });
+//       }
 
-      const workbook = xlsx.readFile(req.file.path);
-      const sheetName = workbook.SheetNames[0];
-      const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+//       const workbook = xlsx.readFile(req.file.path);
+//       const sheetName = workbook.SheetNames[0];
+//       const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-      const students = await Promise.all(
-        data.map(async (row) => {
-          const hashedPassword = await bcrypt.hash(
-            row.password || "123456",
-            10
-          );
-          return User.create({
-            email: row.email,
-            password: hashedPassword,
-            name: row.name,
-            role: "Student",
-          });
-        })
-      );
+//       const students = await Promise.all(
+//         data.map(async (row) => {
+//           const hashedPassword = await bcrypt.hash(
+//             row.password || "123456",
+//             10
+//           );
+//           return User.create({
+//             email: row.email,
+//             password: hashedPassword,
+//             name: row.name,
+//             role: "Student",
+//           });
+//         })
+//       );
 
-      res
-        .status(201)
-        .json({ success: true, message: "Students imported", data: students });
-    } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
-    }
-  });
-}
+//       res
+//         .status(201)
+//         .json({ success: true, message: "Students imported", data: students });
+//     } catch (error) {
+//       res.status(400).json({ success: false, message: error.message });
+//     }
+//   });
+// }
