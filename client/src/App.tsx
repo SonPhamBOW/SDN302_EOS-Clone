@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import Dashboard from "./pages/admin/Dashboard";
 import { useThemeStore } from "./store/useThemeStore";
 import LoginPage from "./pages/LoginPage";
@@ -48,17 +48,25 @@ function App() {
         <Route
           path="/course"
           element={
-            <AdminLayout showSidebar={true}>
-              <MangeCourse />
-            </AdminLayout>
+            isAuthenticated && isAdmin ? (
+              <AdminLayout showSidebar={true}>
+                <MangeCourse />
+              </AdminLayout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/"} />
+            )
           }
         />
         <Route
           path="/students"
           element={
-            <AdminLayout showSidebar={true}>
-              <ManageStudents />
-            </AdminLayout>
+            isAuthenticated && isAdmin ? (
+              <AdminLayout showSidebar={true}>
+                <ManageStudents />
+              </AdminLayout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/"} />
+            )
           }
         />
       </Routes>

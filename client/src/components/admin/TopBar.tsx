@@ -1,4 +1,3 @@
-import { FiCalendar } from "react-icons/fi";
 import useAuthUser from "../../hooks/useAuthUser";
 import ToogleThemeBtn from "../ToogleThemeBtn";
 
@@ -18,10 +17,10 @@ export const TopBar = () => {
         <div className="flex items-center gap-2">
           <ToogleThemeBtn/>
 
-          <button className="flex text-sm text-base-content items-center gap-2 bg-base-300 transition-colors px-3 py-1.5 rounded">
+          {/* <button className="flex text-sm text-base-content items-center gap-2 bg-base-300 transition-colors px-3 py-1.5 rounded">
             <FiCalendar />
             <span>Prev 6 Months</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
