@@ -135,9 +135,11 @@ export async function searchStudents(req, res) {
     if (!search)
       return res.status(400).json({ message: "Search query is required" });
 
+    const regex = new RegExp(search, "i");
+
     const students = await User.find({
       role: "Student",
-      name: { $regex: search, $options: "i" },
+      name: { $regex: regex },
     })
       .select("-password")
       .limit(20);
