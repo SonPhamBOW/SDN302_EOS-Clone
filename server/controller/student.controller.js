@@ -1,7 +1,5 @@
-import { User } from "../models/User.js";
-import bcrypt from "bcryptjs";
-import xlsx from "xlsx";
-import CourseStudent from "../models/CourseStudent.js";
+import { User } from "../models/user.model.js";
+import { CourseStudent } from "../models/course-student.model.js";
 /**
  * Middleware inside controller file
  */
@@ -25,64 +23,57 @@ export async function getAllStudents(req, res) {
 }
 
 /**
- * Add student
- */
-export async function addStudent(req, res) {
-  isAdmin(req, res, async () => {
-    try {
-      const { email, password, name } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const student = new User({
-        email,
-        password: hashedPassword,
-        name,
-        role: "Student",
-      });
-      await student.save();
-      res
-        .status(201)
-        .json({ success: true, message: "Student added", data: student });
-    } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
-    }
-  });
-}
-
-/**
  * Enroll student
  */
 
 export async function enrollStudent(req, res) {
+  try {
+    const { courseId } = req.params; // from URL
+    const { studentId } = req.body; // from request body
+
+    if (!studentId) {
+      return res.status(400).json({ message: "Student ID is required" });
+    }
+
+    // Prevent duplicate enrollment
+    const existing = await CourseStudent.findOne({ courseId, studentId });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ message: "Student is already enrolled in this course" });
+    }
+
+    // Create enrollment record
+    const enrollment = new CourseStudent({ courseId, studentId });
+    await enrollment.save();
+
+    res.status(201).json({
+      message: "Student enrolled successfully",
+      enrollment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+/**
+ * Update student
+ */
+export async function updateStudent(req, res) {
   isAdmin(req, res, async () => {
     try {
-      const { studentId, courseId } = req.body;
-
-      // Check if already enrolled
-      const existingEnrollment = await CourseStudent.findOne({
-        student_id: studentId,
-        course_id: courseId,
+      const { id } = req.params;
+      const updated = await User.findByIdAndUpdate(id, req.body, {
+        new: true,
+        runValidators: true,
       });
-
-      if (existingEnrollment) {
-        return res.status(400).json({
-          success: false,
-          message: "Student is already enrolled in this course",
-        });
-      }
-
-      // Create new enrollment link
-      const enrollment = new CourseStudent({
-        student_id: studentId,
-        course_id: courseId,
-      });
-
-      await enrollment.save();
-
-      res.status(201).json({
-        success: true,
-        message: "Student enrolled successfully",
-        data: enrollment,
-      });
+      if (!updated)
+        return res
+          .status(404)
+          .json({ success: false, message: "Student not found" });
+      res
+        .status(200)
+        .json({ success: true, message: "Student updated", data: updated });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
     }
@@ -108,42 +99,25 @@ export async function deleteStudent(req, res) {
   });
 }
 
-/**
- * Import students from Excel/CSV
- */
-export async function importStudents(req, res) {
-  isAdmin(req, res, async () => {
-    try {
-      if (!req.file) {
-        return res
-          .status(400)
-          .json({ success: false, message: "No file uploaded" });
-      }
+// Get student info by ID (and enrolled courses)
+export async function getStudentById(req, res) {
+  try {
+    const { studentId } = req.params;
 
-      const workbook = xlsx.readFile(req.file.path);
-      const sheetName = workbook.SheetNames[0];
-      const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    const enrollments = await CourseStudent.find({ student_id: studentId })
+      .populate("course_id", "title description") // include course info
+      .populate("student_id", "name email"); // include student info
 
-      const students = await Promise.all(
-        data.map(async (row) => {
-          const hashedPassword = await bcrypt.hash(
-            row.password || "123456",
-            10
-          );
-          return User.create({
-            email: row.email,
-            password: hashedPassword,
-            name: row.name,
-            role: "Student",
-          });
-        })
-      );
-
-      res
-        .status(201)
-        .json({ success: true, message: "Students imported", data: students });
-    } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
+    if (!enrollments || enrollments.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Student not found or not enrolled in any course" });
     }
-  });
+
+    res.status(200).json(enrollments);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error fetching student", error: err.message });
+  }
 }
