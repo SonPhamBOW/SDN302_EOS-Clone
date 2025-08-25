@@ -1,7 +1,7 @@
 import { User } from "../models/User.js";
 import bcrypt from "bcryptjs";
 import xlsx from "xlsx";
-
+import CourseStudent from "../models/CourseStudent.js";
 /**
  * Middleware inside controller file
  */
@@ -49,23 +49,40 @@ export async function addStudent(req, res) {
 }
 
 /**
- * Update student
+ * Enroll student
  */
-export async function updateStudent(req, res) {
+
+export async function enrollStudent(req, res) {
   isAdmin(req, res, async () => {
     try {
-      const { id } = req.params;
-      const updated = await User.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
+      const { studentId, courseId } = req.body;
+
+      // Check if already enrolled
+      const existingEnrollment = await CourseStudent.findOne({
+        student_id: studentId,
+        course_id: courseId,
       });
-      if (!updated)
-        return res
-          .status(404)
-          .json({ success: false, message: "Student not found" });
-      res
-        .status(200)
-        .json({ success: true, message: "Student updated", data: updated });
+
+      if (existingEnrollment) {
+        return res.status(400).json({
+          success: false,
+          message: "Student is already enrolled in this course",
+        });
+      }
+
+      // Create new enrollment link
+      const enrollment = new CourseStudent({
+        student_id: studentId,
+        course_id: courseId,
+      });
+
+      await enrollment.save();
+
+      res.status(201).json({
+        success: true,
+        message: "Student enrolled successfully",
+        data: enrollment,
+      });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
     }
