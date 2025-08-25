@@ -1,6 +1,5 @@
 import Exam from "../models/Exam.js";
-import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
-import { shuffleQuestions } from "../utils/shuffleQuestions.js";
+
 export async function updateExam(req, res) {
   try {
     const { examId } = req.params;
@@ -29,29 +28,6 @@ export async function updateExam(req, res) {
       message: "Exam updated successfully",
       data: exam,
     });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-}
-
-export async function takeExam(req, res) {
-  try {
-    const {examId} = req.params;
-    const exam = await Exam.findById(examId);
-    if (!exam) return res.status(404).json({ success: false, message: "Exam not found" });
-    
-    const {questions} = exam;
-    const randomQuestions = getRandomQuestions(examId, exam.total_questions);
-    
-    res.status(200).json({
-      success: true,
-      message: "Exam taken successfully",
-      data: {
-        ...exam,
-        questions: randomQuestions,
-      },
-    });
-
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

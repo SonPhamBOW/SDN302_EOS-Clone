@@ -10,6 +10,7 @@ import courseRouter from "./routes/course.routes.js";
 import adminRouter from "./routes/admin.route.js";
 import studentRouter from "./routes/student.routes.js";
 import studentExamRouter from "./routes/student.exam.routes.js";
+import examLogRouter from "./routes/exam-log.route.js";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use("/api", courseRouter);
 app.use("/api", adminRouter);
 app.use("/api", studentRouter);
 app.use("/api", studentExamRouter);
+app.use("/api", examLogRouter);
 
 connectDB().then(() => {
   try {
