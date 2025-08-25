@@ -33,4 +33,3 @@ const examSchema = new mongoose.Schema(
 );
 
 export const Exam = mongoose.model("Exam", examSchema);
-

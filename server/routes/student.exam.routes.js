@@ -13,4 +13,8 @@ studentExamRouter.get("/student/exam-statistics", protectedRoute, studentExamCon
 studentExamRouter.get("/student/available-exams", protectedRoute, studentExamController.getAvailableExams);
 studentExamRouter.get("/student/course-exams/:courseId", protectedRoute, studentExamController.getCourseExams);
 
+// USECASE 3: Làm bài thi và nộp bài
+studentExamRouter.get("/student/take-exam/:examId", protectedRoute, studentExamController.takeExam);
+studentExamRouter.post("/student/submit-exam/:examId", protectedRoute, studentExamController.submitExam);
+
 export default studentExamRouter;

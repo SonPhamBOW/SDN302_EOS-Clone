@@ -1,6 +1,6 @@
-const Question = require("../models/Question");
+import { Question } from "../models/Question.js";
 
-async function getRandomQuestions(course_id, total_questions) {
+export async function getRandomQuestions(course_id, total_questions) {
   // Fetch all questions for the given course
   const allQuestions = await Question.find({ course_id });
 
@@ -16,5 +16,3 @@ async function getRandomQuestions(course_id, total_questions) {
   // Return only the required number
   return shuffled.slice(0, total_questions);
 }
-
-module.exports = { getRandomQuestions };
