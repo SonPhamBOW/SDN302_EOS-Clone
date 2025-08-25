@@ -1,4 +1,4 @@
-import Question from "../models/Question.js";
+import { Question } from "../models/Question.js";
 
 export async function getRandomQuestions(course_id, total_questions) {
   // Fetch all questions for the given course

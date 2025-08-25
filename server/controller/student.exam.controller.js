@@ -1,7 +1,9 @@
 import { ExamResult } from "../models/ExamResult.js";
 import { Exam } from "../models/Exam.js";
 import { Course } from "../models/Course.js";
+import { Question } from "../models/Question.js";
 import mongoose from "mongoose";
+import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
 
 /**
  * USECASE 1: Xem kết quả & thống kê điểm
@@ -231,6 +233,166 @@ export async function getCourseExams(req, res) {
     res.status(500).json({ 
       success: false, 
       message: error.message 
+    });
+  }
+}
+
+export async function takeExam(req, res) {
+  try {
+    const {examId} = req.params;
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ success: false, message: "Exam not found" });
+    
+    const randomQuestions = await getRandomQuestions(examId, exam.total_questions);
+    
+    res.status(200).json({
+      success: true,
+      message: "Exam taken successfully",
+      data: {
+        ...exam,
+        questions: randomQuestions,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+/**
+ * USECASE 3: Nộp bài thi và tính điểm
+ * Submit exam answers and calculate score
+ */
+export async function submitExam(req, res) {
+  try {
+    const { examId } = req.params;
+    const { answers, timeTaken } = req.body; // answers: [{question_id, student_answer}]
+    const studentId = req.user.id;
+    
+    // Validation
+    if (!answers || !Array.isArray(answers)) {
+      return res.status(400).json({
+        success: false,
+        message: "Answers are required and must be an array"
+      });
+    }
+    
+    // Kiểm tra exam có tồn tại và còn trong thời gian làm bài
+    const exam = await Exam.findById(examId).populate('course_id', 'name');
+    if (!exam) {
+      return res.status(404).json({
+        success: false,
+        message: "Exam not found"
+      });
+    }
+    
+    const currentTime = new Date();
+    if (currentTime < exam.start_time || currentTime > exam.end_time) {
+      return res.status(400).json({
+        success: false,
+        message: "Exam is not available at this time"
+      });
+    }
+    
+    // Kiểm tra xem học sinh đã nộp bài này chưa
+    const existingResult = await ExamResult.findOne({
+      student_id: studentId,
+      exam_id: examId
+    });
+    
+    if (existingResult) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already submitted this exam"
+      });
+    }
+    
+    // Lấy thông tin các câu hỏi để tính điểm
+    const questionIds = answers.map(answer => answer.question_id);
+    const questions = await Question.find({
+      _id: { $in: questionIds }
+    });
+    
+    if (questions.length !== answers.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid questions in answers"
+      });
+    }
+    
+    // Tính điểm
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+    const processedAnswers = [];
+    
+    for (const answer of answers) {
+      const question = questions.find(q => q._id.toString() === answer.question_id);
+      if (!question) continue;
+      
+      // Tìm đáp án đúng
+      const correctAnswer = question.answers.find(ans => ans.isCorrect);
+      const isCorrect = correctAnswer && correctAnswer.content === answer.student_answer;
+      
+      if (isCorrect) {
+        correctAnswers++;
+      } else {
+        wrongAnswers++;
+      }
+      
+      processedAnswers.push({
+        question_id: answer.question_id,
+        student_answer: answer.student_answer,
+        is_correct: isCorrect,
+        correct_answer: correctAnswer ? correctAnswer.content : ""
+      });
+    }
+    
+    // Tính điểm số (thang điểm 100)
+    const totalQuestions = answers.length;
+    const score = (correctAnswers / totalQuestions) * 100;
+    
+    // Lưu kết quả thi
+    const examResult = new ExamResult({
+      student_id: studentId,
+      exam_id: examId,
+      course_id: exam.course_id._id,
+      score: Math.round(score * 100) / 100, // Làm tròn 2 chữ số thập phân
+      total_questions: totalQuestions,
+      correct_answers: correctAnswers,
+      wrong_answers: wrongAnswers,
+      time_taken: timeTaken || 0, // Thời gian làm bài (phút)
+      answers: processedAnswers
+    });
+    
+    await examResult.save();
+    
+    // Populate thông tin để trả về
+    await examResult.populate([
+      { path: 'exam_id', select: 'name start_time end_time' },
+      { path: 'course_id', select: 'name' },
+      { path: 'answers.question_id', select: 'content type' }
+    ]);
+    
+    res.status(201).json({
+      success: true,
+      message: "Exam submitted successfully",
+      data: {
+        result: examResult,
+        summary: {
+          score: examResult.score,
+          total_questions: totalQuestions,
+          correct_answers: correctAnswers,
+          wrong_answers: wrongAnswers,
+          accuracy_rate: Math.round((correctAnswers / totalQuestions) * 100 * 100) / 100,
+          time_taken: timeTaken,
+        }
+      }
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 }

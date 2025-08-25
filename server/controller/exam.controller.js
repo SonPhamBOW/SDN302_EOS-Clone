@@ -1,6 +1,5 @@
 import Exam from "../models/Exam.js";
-import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
-import { shuffleQuestions } from "../utils/shuffleQuestions.js";
+
 export async function updateExam(req, res) {
   try {
     const { examId } = req.params;
