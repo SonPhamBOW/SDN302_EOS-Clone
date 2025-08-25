@@ -3,6 +3,9 @@ import { Course } from "../models/Course.js";
 import { Exam } from "../models/Exam.js";
 import { ExamResult } from "../models/ExamResult.js";
 import { Question } from "../models/Question.js";
+import CourseStudent from "../models/CourseStudent.js";
+import mongoose from "mongoose";
+import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
 
 /**
  * USECASE 1: Xem kết quả & thống kê điểm
@@ -12,7 +15,13 @@ export async function getExamResults(req, res) {
   try {
     const studentId = req.user.id; // Lấy từ middleware auth
     
-    const results = await ExamResult.find({ student_id: studentId })
+    // Tìm theo cả ObjectId và string ID để handle database có mixed types
+    const results = await ExamResult.find({
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ]
+    })
       .populate('exam_id', 'name start_time end_time')
       .populate('course_id', 'name')
       .sort({ submitted_at: -1 });
@@ -71,8 +80,13 @@ export async function getExamStatistics(req, res) {
   try {
     const studentId = req.user.id;
     
-    // Lấy tất cả kết quả thi
-    const results = await ExamResult.find({ student_id: studentId });
+    // Lấy tất cả kết quả thi - handle cả ObjectId và string ID
+    const results = await ExamResult.find({
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ]
+    });
     
     if (results.length === 0) {
       return res.status(200).json({
@@ -147,6 +161,93 @@ export async function getExamStatistics(req, res) {
       success: false, 
       message: error.message 
     });
+  }
+}
+
+/**
+ * Get list of courses the current student is enrolled in
+ */
+export async function getMyCourses(req, res) {
+  try {
+    const studentId = req.user.id;
+
+    const enrollments = await CourseStudent.find({ student_id: studentId })
+      .populate('course_id', 'name description')
+      .sort({ createdAt: -1 });
+
+    const courses = enrollments.map((e) => e.course_id).filter(Boolean);
+    return res.status(200).json({ success: true, data: courses });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+/**
+ * Get exam statistics for a student within a specific course
+ */
+export async function getCourseStatistics(req, res) {
+  try {
+    const studentId = req.user.id;
+    const { courseId } = req.params;
+
+    const course = await Course.findById(courseId).select('name description');
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    const results = await ExamResult.find({ 
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ],
+      course_id: courseId 
+    });
+
+    if (results.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          course,
+          total_exams: 0,
+          average_score: 0,
+          total_questions: 0,
+          total_correct: 0,
+          total_wrong: 0,
+          accuracy_rate: 0,
+          score_distribution: [],
+        },
+      });
+    }
+
+    const totalExams = results.length;
+    const totalQuestions = results.reduce((s, r) => s + r.total_questions, 0);
+    const totalCorrect = results.reduce((s, r) => s + r.correct_answers, 0);
+    const totalWrong = results.reduce((s, r) => s + r.wrong_answers, 0);
+    const averageScore = results.reduce((s, r) => s + r.score, 0) / totalExams;
+    const accuracyRate = totalQuestions > 0 ? (totalCorrect / totalQuestions) * 100 : 0;
+
+    const scoreDistribution = {
+      excellent: results.filter(r => r.score >= 90).length,
+      good: results.filter(r => r.score >= 80 && r.score < 90).length,
+      average: results.filter(r => r.score >= 70 && r.score < 80).length,
+      below_average: results.filter(r => r.score < 70).length,
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        course,
+        total_exams: totalExams,
+        average_score: Math.round(averageScore * 100) / 100,
+        total_questions: totalQuestions,
+        total_correct: totalCorrect,
+        total_wrong: totalWrong,
+        accuracy_rate: Math.round(accuracyRate * 100) / 100,
+        score_distribution: scoreDistribution,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 }
 
@@ -303,9 +404,12 @@ export async function submitExam(req, res) {
       });
     }
     
-    // Kiểm tra xem học sinh đã nộp bài này chưa
+    // Kiểm tra xem học sinh đã nộp bài này chưa - handle cả ObjectId và string ID
     const existingResult = await ExamResult.findOne({
-      student_id: studentId,
+      $or: [
+        { student_id: studentId },
+        { student_id: studentId.toString() }
+      ],
       exam_id: examId
     });
     

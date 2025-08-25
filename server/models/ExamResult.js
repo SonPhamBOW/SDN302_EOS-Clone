@@ -44,6 +44,11 @@ const examResultSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    archived: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     answers: [
       {
         question_id: {

@@ -5,10 +5,10 @@ import * as studentController from "../controller/student.controller.js";
 const studentRouter = express.Router();
 
 // Get all students
-studentRouter.get("/student/list", studentController.getAllStudents);
+studentRouter.get("/list", studentController.getAllStudents);
 
 // get student by id
-studentRouter.get("/student/:id", studentController.getStudentById);
+studentRouter.get("/:id", studentController.getStudentById);
 
 // Enroll a student into a course
 studentRouter.post(
@@ -17,9 +17,9 @@ studentRouter.post(
 );
 
 // Update student
-studentRouter.put("/student/:id", studentController.updateStudent);
+studentRouter.put("/:id", studentController.updateStudent);
 
 // Delete student
-studentRouter.delete("/student/:id", studentController.deleteStudent);
+studentRouter.delete("/:id", studentController.deleteStudent);
 
 export default studentRouter;
