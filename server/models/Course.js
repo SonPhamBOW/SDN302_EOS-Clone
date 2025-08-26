@@ -6,7 +6,14 @@ const courseSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true, 
+      unique: true,
+    },
+    course_code: {
+      type: String,
+      required: false,
+      trim: true,
+      unique: true,
+      uppercase: true,
     },
     description: {
       type: String,
@@ -15,11 +22,11 @@ const courseSchema = new mongoose.Schema(
     },
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", 
+      ref: "User",
       required: true,
     },
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
 
 export const Course = mongoose.model("Course", courseSchema);

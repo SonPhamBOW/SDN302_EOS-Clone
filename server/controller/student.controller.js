@@ -1,5 +1,5 @@
 import { User } from "../models/User.js";
-import CourseStudent from "../models/CourseStudent.js";
+import { CourseStudent } from "../models/CourseStudent.js";
 /**
  * Middleware inside controller file
  */
@@ -28,15 +28,19 @@ export async function getAllStudents(req, res) {
 
 export async function enrollStudent(req, res) {
   try {
-    const { courseId } = req.params; // from URL
-    const { studentId } = req.body; // from request body
+    const { courseId } = req.params;
+    const { studentId } = req.body;
 
     if (!studentId) {
       return res.status(400).json({ message: "Student ID is required" });
     }
 
     // Prevent duplicate enrollment
-    const existing = await CourseStudent.findOne({ course_id: courseId, student_id: studentId });
+    const existing = await CourseStudent.findOne({
+      course_id: courseId,
+      student_id: studentId,
+    });
+
     if (existing) {
       return res
         .status(400)
@@ -44,14 +48,17 @@ export async function enrollStudent(req, res) {
     }
 
     // Create enrollment record
-    const enrollment = new CourseStudent({ course_id: courseId, student_id: studentId });
-    await enrollment.save();
+    const enrollment = await CourseStudent.create({
+      course_id: courseId,
+      student_id: studentId,
+    });
 
     res.status(201).json({
       message: "Student enrolled successfully",
       enrollment,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 }
@@ -119,5 +126,28 @@ export async function getStudentById(req, res) {
     res
       .status(500)
       .json({ message: "Error fetching student", error: err.message });
+  }
+}
+
+export async function searchStudents(req, res) {
+  try {
+    const { search } = req.query;
+
+    if (!search)
+      return res.status(400).json({ message: "Search query is required" });
+
+    const regex = new RegExp(search, "i");
+
+    const students = await User.find({
+      role: "Student",
+      name: { $regex: regex },
+    })
+      .select("-password")
+      .limit(20);
+
+    // Return empty array if no students found
+    res.status(200).json({ success: true, data: students || [] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 }

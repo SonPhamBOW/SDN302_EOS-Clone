@@ -1,6 +1,6 @@
 import type { IconType } from "react-icons";
 
-import { FiHome, FiUsers } from "react-icons/fi";
+import { FiHome, FiUsers, FiBarChart2 } from "react-icons/fi";
 import { PiExam } from "react-icons/pi";
 import { useLocation, useNavigate } from "react-router";
 
@@ -27,6 +27,12 @@ export const RouteSelect = () => {
         selected={curentPath === "/students" ? true : false}
         title="Students"
         link="/students"
+      />
+      <Route
+        Icon={FiBarChart2}
+        selected={curentPath === "/admin/results" ? true : false}
+        title="Results Management"
+        link="/admin/results"
       />
     </div>
   );

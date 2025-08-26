@@ -1,10 +1,10 @@
 import { Navigate, Route, Routes } from "react-router";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import PageLoader from "./components/PageLoader";
+import { useThemeStore } from "./store/useThemeStore";
+import Homepage from "./pages/student/Homepage";
 import Layout from "./components/student/Layout";
 import useAuthUser from "./hooks/useAuthUser";
 import AdminLayout from "./pages/admin/AdminLayout";
+import ResultsManagement from "./pages/admin/ResultsManagement";
 import Dashboard from "./pages/admin/Dashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
 import MangeCourse from "./pages/admin/MangeCourse";
@@ -12,8 +12,6 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import { Exam } from "./pages/student/Exam";
 import ExamResult from "./pages/student/ExamResult";
-import Homepage from "./pages/student/Homepage";
-import { useThemeStore } from "./store/useThemeStore";
 
 function App() {
   const { isLoading, authUser } = useAuthUser();
@@ -79,6 +77,31 @@ function App() {
             )
           }
         />
+        {/* Student routes */}
+        <Route
+          path="/student/stats"
+          element={
+            isAuthenticated && !isAdmin ? (
+              <Layout showSidebar={true}>
+                <ExamStatistics />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/"} />
+            )
+          }
+        />
+        <Route
+          path="/student/available-exams"
+          element={
+            isAuthenticated && !isAdmin ? (
+              <Layout showSidebar={true}>
+                <AvailableExams />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/"} />
+            )
+          }
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<SignUpPage />} />
         <Route
@@ -99,6 +122,18 @@ function App() {
             isAuthenticated && isAdmin ? (
               <AdminLayout showSidebar={true}>
                 <ManageStudents />
+              </AdminLayout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/"} />
+            )
+          }
+        />
+        <Route
+          path="/admin/results"
+          element={
+            isAuthenticated && isAdmin ? (
+              <AdminLayout showSidebar={true}>
+                <ResultsManagement />
               </AdminLayout>
             ) : (
               <Navigate to={!isAuthenticated ? "/login" : "/"} />
