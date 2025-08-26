@@ -12,6 +12,7 @@ export interface RegisterType {
 export interface UserType {
   success: boolean;
   user: {
+    _id: string
     avatarUrl: string;
     email: string;
     name: string;

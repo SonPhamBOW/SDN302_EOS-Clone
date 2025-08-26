@@ -11,7 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import AdminLayout from "./pages/admin/AdminLayout";
 import MangeCourse from "./pages/admin/MangeCourse";
-import ManageStudents from "./pages/admin/ManageStudents";
+import ManageStudents from "./pages/admin/ManageQuestion";
 
 function App() {
   const { isLoading, authUser } = useAuthUser();
@@ -58,7 +58,7 @@ function App() {
           }
         />
         <Route
-          path="/students"
+          path="/questions"
           element={
             isAuthenticated && isAdmin ? (
               <AdminLayout showSidebar={true}>

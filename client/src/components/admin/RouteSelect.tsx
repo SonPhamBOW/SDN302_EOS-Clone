@@ -24,9 +24,9 @@ export const RouteSelect = () => {
       />
       <Route
         Icon={FiUsers}
-        selected={curentPath === "/students" ? true : false}
-        title="Students"
-        link="/students"
+        selected={curentPath === "/questions" ? true : false}
+        title="Questions"
+        link="/questions"
       />
     </div>
   );

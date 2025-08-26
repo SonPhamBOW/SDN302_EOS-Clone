@@ -1,11 +1,12 @@
-import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 import { FaArrowRight } from "react-icons/fa";
 import { FiTrendingDown, FiTrendingUp } from "react-icons/fi";
 import { getAllCourses } from "../../apis/Admin.api";
 import { useQuery } from "@tanstack/react-query";
+import DropdownMenu from "../../components/admin/DropdownMenu";
+import PageLoader from "../../components/PageLoader";
 
 const MangeCourse = () => {
-  const courses = useQuery({
+  const { data: courses, isLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: getAllCourses,
     retry: false,
@@ -17,7 +18,7 @@ const MangeCourse = () => {
       <div className="flex space-x-6">
         <Card
           title="Course detail"
-          value={`${courses.data?.count.toString()} courses`}
+          value={`${courses?.count.toString()} courses`}
           pillText="2.75%"
           trend="up"
           period="Add course"
@@ -44,26 +45,28 @@ const MangeCourse = () => {
             </tr>
           </thead>
           <tbody>
-            {/* Ví dụ dữ liệu mẫu */}
-            {courses.data?.data?.map((course, index) => (
-              <tr key={course._id} className="hover:bg-base-300">
-                <td className="px-4 py-2">{index + 1}</td>
-                <td className="px-4 py-2 font-medium">{course.name}</td>
-                <td className="px-4 py-2">{course.description}</td>
-                <td className="px-4 py-2">{course.created_by.name}</td>
-                <td className="px-4 py-2">
-                  {new Date(course.createdAt).toLocaleDateString("vi-VN")}
-                </td>
-                <td className="px-4 py-2 text-center space-x-2">
-                  <button className="btn btn-sm btn-primary">
-                    <PencilIcon className="size-3" />
-                  </button>
-                  <button className="btn btn-sm btn-error">
-                    <TrashIcon className="size-3" />
-                  </button>
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="text-center">
+                  <PageLoader />
                 </td>
               </tr>
-            ))}
+            ) : (
+              courses?.data.map((course, index) => (
+                <tr key={course._id} className="hover:bg-base-300">
+                  <td className="px-4 py-2">{index + 1}</td>
+                  <td className="px-4 py-2 font-medium">{course.name}</td>
+                  <td className="px-4 py-2">{course.description}</td>
+                  <td className="px-4 py-2">{course.created_by.name}</td>
+                  <td className="px-4 py-2">
+                    {new Date(course.createdAt).toLocaleDateString("vi-VN")}
+                  </td>
+                  <td className="px-4 py-2 text-center space-x-2">
+                    <DropdownMenu course={course} />
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

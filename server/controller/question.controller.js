@@ -1,12 +1,13 @@
-import {Question} from "../models/Question.js";
+import mongoose from "mongoose";
+import { Question } from "../models/Question.js";
 
 export async function getQuestions(req, res, next) {
   try {
     const { course_id } = req.query;
 
-    const query = course_id ? { course_id } : {};
-
-    const questions = await Question.find(query)
+    const questions = await Question.find({
+      course_id: course_id,
+    })
       .populate("course_id", "name")
       .populate("createdBy", "name email");
 
@@ -45,6 +46,40 @@ export async function createQuestion(req, res, next) {
       data: question,
     });
   } catch (error) {
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+export async function createManyQuestion(req, res, next) {
+  try {
+    const questions = req.body; 
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must be a non-empty array of questions",
+      });
+    }
+
+    for (const q of questions) {
+      if (!q.course_id || !q.type || !q.content || !q.createdBy) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Each question must have course_id, type, content and createdBy",
+        });
+      }
+    }
+
+    const insertedQuestions = await Question.insertMany(questions);
+
+    res.status(201).json({
+      success: true,
+      message: "Questions created successfully!",
+      data: insertedQuestions,
+    });
+  } catch (error) {
+    console.error("Error creating questions:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }

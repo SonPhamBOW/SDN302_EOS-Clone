@@ -115,7 +115,6 @@ export async function signIn(req, res, next) {
       message: "Sign in successfully",
       user: {
         ...user._doc,
-        _id: undefined,
         password: undefined,
       },
     });

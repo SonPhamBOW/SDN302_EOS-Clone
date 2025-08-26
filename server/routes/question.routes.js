@@ -4,6 +4,9 @@ const questionRouter = Router();
 
 questionRouter.route("/questions").get(questionController.getQuestions);
 questionRouter.route("/questions").post(questionController.createQuestion);
+
+questionRouter.route("/questions-many").post(questionController.createManyQuestion);
+
 questionRouter.route("/questions/:id").put(questionController.updateQuestion);
 questionRouter.route("/questions/:id").delete(questionController.deleteQuestion);
 
