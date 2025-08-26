@@ -1,12 +1,9 @@
 import mongoose from "mongoose";
 import { Course } from "../models/Course.js";
-import CourseStudent from "../models/CourseStudent.js";
+import { CourseStudent } from "../models/CourseStudent.js";
 import { Exam } from "../models/Exam.js";
 import { ExamResult } from "../models/ExamResult.js";
 import { Question } from "../models/Question.js";
-import { CourseStudent } from "../models/CourseStudent.js";
-import mongoose from "mongoose";
-import { getRandomQuestions } from "../utils/getRandomQuestionsForExam.js";
 
 /**
  * USECASE 1: Xem kết quả & thống kê điểm
