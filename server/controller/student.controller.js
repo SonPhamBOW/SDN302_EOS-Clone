@@ -1,23 +1,17 @@
 import { User } from "../models/User.js";
 import { CourseStudent } from "../models/CourseStudent.js";
-/**
- * Middleware inside controller file
- */
-function isAdmin(req, res, next) {
-  if (req.user && req.user.role === "Admin") {
-    return next();
-  }
-  return res
-    .status(403)
-    .json({ success: false, message: "Access denied: Admins only" });
-}
-
+import mongoose from "mongoose";
 // Get all students
 export async function getAllStudents(req, res) {
   try {
     const students = await User.find({ role: "Student" }).select("-password");
-    res.status(200).json({ success: true, data: students });
+    res.status(200).json({
+      success: true,
+      count: students.length,
+      data: students,
+    });
   } catch (error) {
+    console.error("Get all students error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 }
@@ -67,43 +61,44 @@ export async function enrollStudent(req, res) {
  * Update student
  */
 export async function updateStudent(req, res) {
-  isAdmin(req, res, async () => {
-    try {
-      const { id } = req.params;
-      const updated = await User.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
-      });
-      if (!updated)
-        return res
-          .status(404)
-          .json({ success: false, message: "Student not found" });
-      res
-        .status(200)
-        .json({ success: true, message: "Student updated", data: updated });
-    } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
-    }
-  });
+  try {
+    const { id } = req.params;
+    const updated = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updated)
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
+    res
+      .status(200)
+      .json({ success: true, message: "Student updated", data: updated });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 }
 
 /**
  * Delete student
  */
 export async function deleteStudent(req, res) {
-  isAdmin(req, res, async () => {
-    try {
-      const { id } = req.params;
-      const deleted = await User.findByIdAndDelete(id);
-      if (!deleted)
-        return res
-          .status(404)
-          .json({ success: false, message: "Student not found" });
-      res.status(200).json({ success: true, message: "Student deleted" });
-    } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
+  try {
+    const { id } = req.params;
+    const deleted = await User.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
     }
-  });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Student deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 }
 
 // Get student info by ID (and enrolled courses)
@@ -111,21 +106,54 @@ export async function getStudentById(req, res) {
   try {
     const { id } = req.params;
 
-    const enrollments = await CourseStudent.find({ student_id: id })
-      .populate("course_id", "name description") // include course info
-      .populate("student_id", "name email"); // include student info
-
-    if (!enrollments || enrollments.length === 0) {
+    // validate id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res
-        .status(404)
-        .json({ message: "Student not found or not enrolled in any course" });
+        .status(400)
+        .json({ success: false, message: "Invalid student id" });
     }
 
-    res.status(200).json(enrollments);
+    // 1) fetch student basic info
+    const student = await User.findById(id).select(
+      "name email lastLogin isVerified"
+    );
+    if (!student) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
+    }
+
+    // 2) fetch enrollments and populate course info
+    const enrollments = await CourseStudent.find({ student_id: id }).populate(
+      "course_id",
+      "name course_code description"
+    );
+
+    // map courses (filter nulls if a course was removed)
+    const courses = enrollments
+      .map((e) => e.course_id)
+      .filter((c) => !!c)
+      .map((c) => ({
+        _id: c._id,
+        name: c.name,
+        course_code: c.course_code,
+        description: c.description,
+      }));
+
+    const result = {
+      name: student.name,
+      email: student.email,
+      lastLogin: student.lastLogin,
+      isVerified: student.isVerified,
+      courses,
+    };
+
+    return res.status(200).json({ success: true, data: result });
   } catch (err) {
-    res
+    console.error("getStudentById error:", err);
+    return res
       .status(500)
-      .json({ message: "Error fetching student", error: err.message });
+      .json({ success: false, message: "Server error", error: err.message });
   }
 }
 

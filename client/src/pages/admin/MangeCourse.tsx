@@ -175,7 +175,13 @@ const MangeCourse = () => {
                   </button>
                   <button
                     className="btn btn-sm btn-error"
-                    onClick={() => removeCourse(course._id)}
+                    onClick={() => {
+                      if (
+                        confirm("Are you sure you want to delete this student?")
+                      ) {
+                        removeCourse(course._id);
+                      }
+                    }}
                   >
                     <TrashIcon className="size-3" />
                   </button>
