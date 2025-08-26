@@ -20,13 +20,22 @@ export default function ResultsManagement() {
 	useEffect(() => { load(); }, [archived]);
 
 	async function onExport() {
-		const blob = await adminExportExamResults({ archived });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = "exam-results.xlsx";
-		a.click();
-		URL.revokeObjectURL(url);
+		try {
+			console.log("Exporting with filter:", { archived });
+			const blob = await adminExportExamResults({ archived });
+			console.log("Export successful, blob size:", blob.size);
+			
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = "exam-results.xlsx";
+			a.click();
+			URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error("Export failed:", error);
+			const errorMessage = error instanceof Error ? error.message : "Unknown error";
+			alert("Export failed: " + errorMessage);
+		}
 	}
 
 	async function onArchive(flag: boolean) {
@@ -38,6 +47,10 @@ export default function ResultsManagement() {
 	}
 
 	if (loading) return <div className="p-4">Loading...</div>;
+
+	// Debug info
+	console.log("Results:", results);
+	console.log("Archived filter:", archived);
 
 	return (
 		<div className="p-4 sm:p-6 lg:p-8 space-y-4 overflow-auto max-h-screen">
@@ -59,38 +72,48 @@ export default function ResultsManagement() {
 			</div>
 
 			<div className="overflow-x-auto">
-				<table className="table table-sm">
-					<thead>
-						<tr>
-							<th></th>
-							<th>Student</th>
-							<th>Email</th>
-							<th>Course</th>
-							<th>Exam</th>
-							<th>Score</th>
-							<th>Correct/Wrong</th>
-							<th>Total</th>
-							<th>Archived</th>
-						</tr>
-					</thead>
-					<tbody>
-						{results.map(r => (
-							<tr key={r._id}>
-								<td>
-									<input type="checkbox" className="checkbox checkbox-sm" checked={!!selected[r._id]} onChange={e => setSelected(s => ({ ...s, [r._id]: e.target.checked }))} />
-								</td>
-								<td>{r.student_id?.name}</td>
-								<td className="text-xs opacity-70">{r.student_id?.email}</td>
-								<td>{r.course_id?.name}</td>
-								<td>{r.exam_id?.name}</td>
-								<td>{r.score}</td>
-								<td>{r.correct_answers}/{r.wrong_answers}</td>
-								<td>{r.total_questions}</td>
-								<td>{r.archived ? "Yes" : "No"}</td>
+				{results.length === 0 ? (
+					<div className="text-center py-8">
+						<p className="text-lg text-gray-500">No exam results found.</p>
+						<p className="text-sm text-gray-400 mt-2">
+							{archived === undefined ? "No results available" : 
+							 archived ? "No archived results" : "No active results"}
+						</p>
+					</div>
+				) : (
+					<table className="table table-sm">
+						<thead>
+							<tr>
+								<th></th>
+								<th>Student</th>
+								<th>Email</th>
+								<th>Course</th>
+								<th>Exam</th>
+								<th>Score</th>
+								<th>Correct/Wrong</th>
+								<th>Total</th>
+								<th>Archived</th>
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							{results.map(r => (
+								<tr key={r._id}>
+									<td>
+										<input type="checkbox" className="checkbox checkbox-sm" checked={!!selected[r._id]} onChange={e => setSelected(s => ({ ...s, [r._id]: e.target.checked }))} />
+									</td>
+									<td>{r.student_id?.name}</td>
+									<td className="text-xs opacity-70">{r.student_id?.email}</td>
+									<td>{r.course_id?.name}</td>
+									<td>{r.exam_id?.name}</td>
+									<td>{r.score}</td>
+									<td>{r.correct_answers}/{r.wrong_answers}</td>
+									<td>{r.total_questions}</td>
+									<td>{r.archived ? "Yes" : "No"}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				)}
 			</div>
 		</div>
 	);
