@@ -95,7 +95,7 @@ export default function AvailableExams() {
 					return (
 						<div
 							key={e._id}
-							className={`card ${canAccessNow ? 'bg-base-100 cursor-pointer' : 'bg-base-200 opacity-60'}`}
+							className={`card border-2 border-base-300 border-white ${canAccessNow ? 'bg-base-100 cursor-pointer' : 'bg-base-200 opacity-60'}`}
 							onClick={() => {
 								if (canAccessNow) navigate(`/exam/${e._id}`);
 							}}
