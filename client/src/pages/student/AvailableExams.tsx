@@ -141,7 +141,14 @@ export default function AvailableExams() {
 			{/* No results message */}
 			{exams.length === 0 && !loading && (
 				<div className="text-center py-8">
-					<p className="text-lg text-gray-500">No exams found matching your search criteria.</p>
+					<p className="text-lg text-gray-500">
+						{searchTerm ? "No exams found matching your search criteria." : "No exams available for your enrolled courses."}
+					</p>
+					{!searchTerm && (
+						<p className="text-sm text-gray-400 mt-2">
+							You may not be enrolled in any courses, or there are no exams scheduled for your courses.
+						</p>
+					)}
 				</div>
 			)}
 		</div>

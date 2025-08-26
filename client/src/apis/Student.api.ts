@@ -72,7 +72,7 @@ export type AvailableExam = {
   canAccess: boolean;
 };
 
-export type MyCourse = { _id: string; name: string };
+export type MyCourse = { _id: string; name: string; course_code?: string };
 
 export const getMyExamResults = async (): Promise<ExamResultItem[]> => {
   const res = await axiosInstance.get("/exam-results");

@@ -260,20 +260,34 @@ export async function getCourseStatistics(req, res) {
 export async function getAvailableExams(req, res) {
   try {
     const currentTime = new Date();
+    const studentId = req.user.id; // Lấy ID của sinh viên hiện tại
     const { search, courseCode } = req.query;
 
-    // Build query for exams
-    let examQuery = {};
+    // Lấy danh sách khóa học mà sinh viên đã đăng ký
+    const enrollments = await CourseStudent.find({ student_id: studentId });
+    const enrolledCourseIds = enrollments.map(e => e.course_id);
 
-    // If course code is provided, filter by course code
+    // Nếu sinh viên chưa đăng ký khóa học nào, trả về mảng rỗng
+    if (enrolledCourseIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Build query for exams - chỉ lấy bài thi của các khóa học đã đăng ký
+    let examQuery = { course_id: { $in: enrolledCourseIds } };
+
+    // If course code is provided, filter by course code (nhưng vẫn phải thuộc khóa học đã đăng ký)
     if (courseCode) {
       const course = await Course.findOne({
         course_code: courseCode.toUpperCase(),
+        _id: { $in: enrolledCourseIds } // Đảm bảo khóa học này sinh viên đã đăng ký
       });
       if (course) {
         examQuery.course_id = course._id;
       } else {
-        // If course code not found, return empty array
+        // If course code not found or student not enrolled, return empty array
         return res.status(200).json({
           success: true,
           data: [],
