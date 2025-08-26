@@ -5,9 +5,6 @@ export async function createCourse(req, res) {
   try {
     const { name, course_code, description, created_by } = req.body;
 
-    const newName = name.toUpperCase();
-    const newCourseCode = course_code ? course_code.toUpperCase() : null;
-
     if (!name || !created_by) {
       return res.status(400).json({
         success: false,
@@ -15,30 +12,37 @@ export async function createCourse(req, res) {
       });
     }
 
-    if (!course_code) {
+    const newName = name.toUpperCase();
+    const newCourseCode = course_code ? course_code.toUpperCase() : null;
+
+    // Check if course name already exists
+    const nameExists = await Course.findOne({ name: newName });
+    if (nameExists) {
       return res.status(400).json({
         success: false,
-        message: "Course code is required",
+        message: "Course with this name already exists!",
+        data: nameExists,
       });
     }
 
-    // Check if course name or course code already exists
-    const alreadyExistCourse = await Course.findOne({
-      $or: [
-        { name: newName },
-        { course_code: newCourseCode }
-      ]
+    // If course_code is provided, check uniqueness
+    if (newCourseCode) {
+      const codeExists = await Course.findOne({ course_code: newCourseCode });
+      if (codeExists) {
+        return res.status(400).json({
+          success: false,
+          message: "Course with this code already exists!",
+          data: codeExists,
+        });
+      }
+    }
+
+    const course = await Course.create({
+      name: newName,
+      course_code: newCourseCode,
+      description,
+      created_by,
     });
-
-    if (alreadyExistCourse) {
-      return res.status(400).json({
-        success: false,
-        message: "Course with this name or code already exists!",
-        data: alreadyExistCourse,
-      });
-    }
-
-    const course = await Course.create({ name, course_code: newCourseCode, description, created_by });
 
     res.status(201).json({
       success: true,
@@ -46,6 +50,7 @@ export async function createCourse(req, res) {
       data: course,
     });
   } catch (error) {
+    console.error("Create course error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 }
@@ -54,23 +59,26 @@ export async function createCourse(req, res) {
 export async function getAllCourses(req, res) {
   try {
     const { search, courseCode } = req.query;
-    
+
     let query = {};
-    
+
     // Search by course code
     if (courseCode) {
       query.course_code = courseCode.toUpperCase();
     }
-    
+
     // Search by name or course code
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { course_code: { $regex: search, $options: 'i' } }
+        { name: { $regex: search, $options: "i" } },
+        { course_code: { $regex: search, $options: "i" } },
       ];
     }
-    
-    const courses = await Course.find(query).populate("created_by", "name email");
+
+    const courses = await Course.find(query).populate(
+      "created_by",
+      "name email"
+    );
     res.status(200).json({
       success: true,
       count: courses.length,
@@ -110,13 +118,13 @@ export async function updateCourse(req, res) {
     if (course_code) {
       const existingCourse = await Course.findOne({
         course_code: course_code.toUpperCase(),
-        _id: { $ne: req.params.id }
+        _id: { $ne: req.params.id },
       });
-      
+
       if (existingCourse) {
         return res.status(400).json({
           success: false,
-          message: "Course code already exists for another course"
+          message: "Course code already exists for another course",
         });
       }
     }
