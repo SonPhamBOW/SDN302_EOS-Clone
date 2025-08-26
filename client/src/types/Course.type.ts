@@ -1,6 +1,7 @@
 export interface Course {
   _id: string;
   name: string;
+  course_code: string;
   description: string;
   created_by: {
     _id: string;

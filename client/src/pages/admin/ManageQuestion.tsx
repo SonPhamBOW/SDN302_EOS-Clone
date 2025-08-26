@@ -7,16 +7,15 @@ import {
 import PageLoader from "../../components/PageLoader";
 import { useState } from "react";
 import AddQuestionModal from "../../components/admin/AddQuestionModal/AddQuestionModal";
-import DropdownMenu from "../../components/admin/DropdownMenu";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { BsThreeDots } from "react-icons/bs";
 import { PencilIcon, TrashIcon } from "lucide-react";
-import { TiTimes, TiTimesOutline } from "react-icons/ti";
+import { TiTimesOutline } from "react-icons/ti";
 import { Bounce, toast } from "react-toastify";
 
-const ManageStudents = () => {
+const ManageQuestions = () => {
   const queryClient = useQueryClient();
-  const { data: courses, isLoading } = useQuery({
+  const { data: courses} = useQuery({
     queryKey: ["courses"],
     queryFn: getAllCourses,
     retry: false,
@@ -266,4 +265,4 @@ const ManageStudents = () => {
   );
 };
 
-export default ManageStudents;
+export default ManageQuestions;

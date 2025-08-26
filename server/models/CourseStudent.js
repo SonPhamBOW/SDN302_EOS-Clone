@@ -18,5 +18,6 @@ const courseStudentSchema = new mongoose.Schema(
 
 export const CourseStudent = mongoose.model(
   "CourseStudent",
-  courseStudentSchema
+  courseStudentSchema,
+  "coursestudents"
 );

@@ -1,7 +1,8 @@
 import type { IconType } from "react-icons";
 
-import { FiHome, FiUsers } from "react-icons/fi";
+import { FiHome, FiUsers, FiBarChart2 } from "react-icons/fi";
 import { PiExam } from "react-icons/pi";
+
 import { useLocation, useNavigate } from "react-router";
 
 export const RouteSelect = () => {
@@ -23,10 +24,22 @@ export const RouteSelect = () => {
         link="/course"
       />
       <Route
+        Icon={PiExam}
+        selected={curentPath === "/question" ? true : false}
+        title="Question"
+        link="/question"
+      />
+      <Route
         Icon={FiUsers}
-        selected={curentPath === "/questions" ? true : false}
-        title="Questions"
-        link="/questions"
+        selected={curentPath === "/students" ? true : false}
+        title="Students"
+        link="/students"
+      />
+      <Route
+        Icon={FiBarChart2}
+        selected={curentPath === "/admin/results" ? true : false}
+        title="Results Management"
+        link="/admin/results"
       />
     </div>
   );

@@ -1,9 +1,9 @@
 import { Router } from "express";
 import * as examController from "../controller/exam.controller.js";
-import { adminRoute } from "../middleware/auth.middleware";
+import { adminRoute } from "../middleware/auth.middleware.js";
 const examRouter = Router();
 
-examRouter.use(adminRoute);
+examRouter.use("/exams", adminRoute);
 
 examRouter.get("/exams");
 

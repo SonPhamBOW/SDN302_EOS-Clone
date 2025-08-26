@@ -1,14 +1,20 @@
 import express from "express";
-// import multer from "multer";
 import * as studentController from "../controller/student.controller.js";
+import { adminRoute } from "../middleware/auth.middleware.js";
 
 const studentRouter = express.Router();
 
-// Get all students
-studentRouter.get("/student/list", studentController.getAllStudents);
+// Apply admin middleware to all routes
+studentRouter.use(adminRoute);
 
-// get student by id
-studentRouter.get("/student/:id", studentController.getStudentById);
+// Get all students
+studentRouter.get("/list", studentController.getAllStudents);
+
+// Search students by name
+studentRouter.get("/search", studentController.searchStudents);
+
+// Get a single student by ID
+studentRouter.get("/:id", studentController.getStudentById);
 
 // Enroll a student into a course
 studentRouter.post(
@@ -16,10 +22,10 @@ studentRouter.post(
   studentController.enrollStudent
 );
 
-// Update student
-studentRouter.put("/student/:id", studentController.updateStudent);
+// Update a student
+studentRouter.put("/:id", studentController.updateStudent);
 
-// Delete student
-studentRouter.delete("/student/:id", studentController.deleteStudent);
+// Delete a student
+studentRouter.delete("/:id", studentController.deleteStudent);
 
 export default studentRouter;

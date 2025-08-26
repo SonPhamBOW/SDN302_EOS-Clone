@@ -41,43 +41,31 @@ const Sidebar = () => {
         </Link>
 
         <Link
-          to={"/friends"}
+          to={"/student/stats"}
           className={`btn btn-ghost justify-start w-full gap-3 px-3 normal-case rounded-full
-            ${curentPath === "/friends" ? "btn-active" : ""}`}
+            ${curentPath === "/student/stats" ? "btn-active" : ""}`}
         >
           <DynamicIcon
-            name={"users"}
+            name={"bar-chart-2"}
             className="size-5 text-base-content opacity-70"
           />
-          <span className="">Friends</span>
+          <span className="">My statistics</span>
         </Link>
 
         <Link
-          to={"/notifications"}
+          to={"/student/available-exams"}
           className={`btn btn-ghost justify-start w-full gap-3 px-3 normal-case rounded-full
-            ${curentPath === "/notification" ? "btn-active" : ""}`}
+            ${curentPath === "/student/available-exams" ? "btn-active" : ""}`}
         >
           <DynamicIcon
-            name={"bell"}
+            name={"calendar"}
             className="size-5 text-base-content opacity-70"
           />
-          <span className="">Notification</span>
+          <span className="">Available exams</span>
         </Link>
       </nav>
 
-      <div className="absolute flex items-center gap-2 bottom-1 left-1">
-        <div className="avatar size-10">
-          <img
-            src={
-              "https://scontent.fhan15-1.fna.fbcdn.net/v/t39.30808-6/520089009_1111422464206872_2290300607537407052_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=zuUQE0oikr0Q7kNvwE6snEY&_nc_oc=Adl4_3NpLNB7gf4Nvr4t9JIL05B9w7Fj4JJARKdK8202A0N62sK8BFiZKZZIof2u_3rhI4aQaArmmFHnMM_joAQG&_nc_zt=23&_nc_ht=scontent.fhan15-1.fna&_nc_gid=w5Qgj2c7Vg4nHKSzJsEPIQ&oh=00_AfWJjZOLSEBJvxyt8XlA64DaYNWHuqeth2gemcoj36sNfg&oe=68B076A3"
-            }
-            alt=""
-          />
-        </div>
-        <div className="flex flex-col">
-          <p className="text-sm font-bold font-mono">{authUser?.name}</p>
-        </div>
-      </div>
+      
     </div>
   );
 };

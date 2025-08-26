@@ -34,13 +34,13 @@ app.get("/", (req, res) => {
   });
 });
 
+app.use("/api/admin", adminRouter);
+app.use("/api", studentExamRouter);
 // Auth apis
 app.use("/api", authRouter);
 app.use("/api", questionRouter);
 app.use("/api", courseRouter);
-app.use("/api", adminRouter);
-app.use("/api", studentRouter);
-app.use("/api", studentExamRouter);
+app.use("/api/student", studentRouter);
 app.use("/api", examLogRouter);
 
 connectDB().then(() => {
