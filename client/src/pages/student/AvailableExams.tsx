@@ -1,30 +1,41 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { getAvailableExams, type AvailableExam } from "../../apis/Student.api";
-import { Link } from "react-router";
 
 export default function AvailableExams() {
 	const [loading, setLoading] = useState(true);
 	const [exams, setExams] = useState<AvailableExam[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
+	const navigate = useNavigate();
 
-	const fetchExams = async () => {
+	const fetchExams = useCallback(async (term?: string) => {
 		setLoading(true);
 		try {
-			// Kiểm tra nếu searchTerm có thể là course code (chứa toàn chữ và số, độ dài 3-10 ký tự)
-			const isCourseCode = /^[A-Z0-9]{3,10}$/.test(searchTerm.toUpperCase());
-			const courseCode = isCourseCode ? searchTerm.toUpperCase() : undefined;
-			const generalSearch = isCourseCode ? undefined : searchTerm;
+			const effectiveTerm = term ?? searchTerm;
+			// Kiểm tra nếu effectiveTerm có thể là course code (chứa toàn chữ và số, độ dài 3-10 ký tự)
+			const isCourseCode = /^[A-Z0-9]{3,10}$/.test(effectiveTerm.toUpperCase());
+			const courseCode = isCourseCode ? effectiveTerm.toUpperCase() : undefined;
+			const generalSearch = isCourseCode ? undefined : effectiveTerm;
 			
 			const data = await getAvailableExams(generalSearch, courseCode);
 			setExams(data);
 		} finally {
 			setLoading(false);
 		}
+	}, [searchTerm]);
+
+	const getStatus = (exam: AvailableExam): 'upcoming' | 'ongoing' | 'completed' => {
+		const now = new Date();
+		const start = new Date(exam.start_time);
+		const end = new Date(exam.end_time);
+		if (now < start) return 'upcoming';
+		if (now > end) return 'completed';
+		return 'ongoing';
 	};
 
 	useEffect(() => {
 		fetchExams();
-	}, []);
+	}, [fetchExams]);
 
 	const handleSearch = () => {
 		fetchExams();
@@ -32,7 +43,7 @@ export default function AvailableExams() {
 
 	const handleClear = () => {
 		setSearchTerm("");
-		fetchExams();
+		fetchExams("");
 	};
 
 	if (loading) return <div className="p-4">Loading...</div>;
@@ -78,44 +89,53 @@ export default function AvailableExams() {
 
 			{/* Results Section */}
 			<div className="grid gap-4 md:grid-cols-2">
-				{exams.map((e) => (
-					<div key={e._id} className={`card ${e.canAccess ? 'bg-base-100' : 'bg-base-200 opacity-60'}`}>
-						<div className="card-body">
-							<div className="flex items-center justify-between">
-								<h3 className="card-title">{e.name}</h3>
-								<span className={`badge ${
-									e.status === 'ongoing' ? 'badge-success' : 
-									e.status === 'upcoming' ? 'badge-warning' : 'badge-neutral'
-								}`}>
-									{e.status === 'ongoing' ? 'Đang mở' : 
-									 e.status === 'upcoming' ? 'Chưa mở' : 'Đã kết thúc'}
-								</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<p className="text-sm opacity-70">{e.course_id?.name || "Unassigned course"}</p>
-								{e.course_id?.course_code && (
-									<span className="badge badge-outline badge-sm">
-										{e.course_id.course_code}
+				{exams.map((e) => {
+					const status = getStatus(e);
+					const canAccessNow = status === 'ongoing';
+					return (
+						<div
+							key={e._id}
+							className={`card ${canAccessNow ? 'bg-base-100 cursor-pointer' : 'bg-base-200 opacity-60'}`}
+							onClick={() => {
+								if (canAccessNow) navigate(`/exam/${e._id}`);
+							}}
+						>
+							<div className="card-body">
+								<div className="flex items-center justify-between">
+									<h3 className="card-title">{e.name}</h3>
+									<span className={`badge ${
+										status === 'ongoing' ? 'badge-success' : 
+										status === 'upcoming' ? 'badge-warning' : 'badge-neutral'
+									}`}>
+										{status === 'ongoing' ? 'Đang mở' : status === 'upcoming' ? 'Chưa mở' : 'Đã kết thúc'}
 									</span>
-								)}
-							</div>
-							<p className="text-xs">
-								{new Date(e.start_time).toLocaleString()} — {new Date(e.end_time).toLocaleString()}
-							</p>
-							<div className="card-actions justify-end">
-								{e.canAccess ? (
-									<Link to={`/student/take-exam/${e._id}`} className="btn btn-primary btn-sm">
-										Take exam
-									</Link>
-								) : (
-									<button className="btn btn-disabled btn-sm" disabled>
-										{e.status === 'upcoming' ? 'Chưa mở' : 'Đã kết thúc'}
-									</button>
-								)}
+								</div>
+								<div className="flex items-center gap-2">
+									<p className="text-sm opacity-70">{e.course_id?.name || "Unassigned course"}</p>
+									{e.course_id?.course_code && (
+										<span className="badge badge-outline badge-sm">
+											{e.course_id.course_code}
+										</span>
+									)}
+								</div>
+								<p className="text-xs">
+									{new Date(e.start_time).toLocaleString()} — {new Date(e.end_time).toLocaleString()}
+								</p>
+								<div className="card-actions justify-end">
+									{canAccessNow ? (
+										<button onClick={(ev) => { ev.stopPropagation(); navigate(`/exam/${e._id}`); }} className="btn btn-primary btn-sm">
+											Vào thi
+										</button>
+									) : (
+										<button className="btn btn-disabled btn-sm" disabled>
+											{status === 'upcoming' ? 'Chưa mở' : 'Đã kết thúc'}
+										</button>
+									)}
+								</div>
 							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 			
 			{/* No results message */}
