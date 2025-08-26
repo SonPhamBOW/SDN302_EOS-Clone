@@ -3,12 +3,13 @@ import { Course } from "../models/Course.js";
 // [POST] /api/courses
 export async function createCourse(req, res) {
   try {
-    const { name, course_code, description, created_by } = req.body;
+    const { name, course_code, description } = req.body;
+    const created_by = req.user.id;
 
-    if (!name || !created_by) {
+    if (!name) {
       return res.status(400).json({
         success: false,
-        message: "Course name and created_by are required",
+        message: "Course name is required",
       });
     }
 
